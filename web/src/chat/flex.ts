@@ -18,7 +18,9 @@ function node(n: FlexNode): HTMLElement | null {
     }
     case 'text': {
       const cls = ['fx-text', SIZE[String(n.size ?? 'md')] ?? 'md', n.weight === 'bold' ? 'bold' : ''].join(' ');
-      const style = [n.color ? `color:${String(n.color)}` : '', typeof n.flex === 'number' ? `flex:${n.flex} 1 0` : ''].filter(Boolean).join(';');
+      const style = [n.color ? `color:${String(n.color)}` : '', typeof n.flex === 'number' ? `flex:${n.flex} 1 0` : '']
+        .filter(Boolean)
+        .join(';');
       return h('p', { class: cls, style, text: String(n.text ?? '') });
     }
     case 'separator':

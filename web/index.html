@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>LINE の AI 受付・予約ボット｜公開デモ</title>
+    <meta
+      name="description"
+      content="LINE 公式アカウントの問い合わせに AI が店の情報だけを根拠に答え、空き枠の提示から仮予約・確定まで進め、難しい相談はスタッフに引き継ぐ。Cloudflare Workers ＋ D1 ＋ Claude API。架空の美容室で、実AIの会話の記録を再生して体験できます。"
+    />
+    <meta name="theme-color" content="#e3e9f1" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <script type="module" src="./src/demo/main.ts"></script>
+  </head>
+  <body>
+    <a class="skip" href="#demo">体験へ移動</a>
+    <header class="site-header" id="top">
+      <a class="brand" href="#top">
+        <span class="brand-mark" data-icon="CalendarCheck"></span>
+        <span class="brand-text"><strong>AI 受付・予約ボット</strong><span>LINE 公式アカウント向け</span></span>
+      </a>
+      <nav class="nav" aria-label="ページ内">
+        <a class="link" href="#demo">体験する</a>
+        <a class="link" href="#how">しくみ</a>
+        <a class="link" href="#numbers">確かめた数字</a>
+        <a class="link" href="./admin/">管理画面</a>
+        <a class="btn small" href="https://github.com/Ryou-Koshimizu/line-ai-reception" data-icon="Code" aria-label="ソースコード（GitHub）"
+          ><span class="label">ソース</span></a
+        >
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow" data-icon="Store">美容室・整体・教室などの LINE 公式アカウントに</p>
+          <h1 id="hero-title">LINE の問い合わせに<br /><span class="mark">AI が答え</span>、予約まで取る。</h1>
+          <p class="lead">
+            よくある質問は店の情報だけを根拠に答え、空き枠はカードで選んで、仮予約 → 確認 → 確定。<span class="more"
+              >難しい相談はスタッフに引き継ぎ、二重予約はデータベースの鍵で防ぎます。</span
+            >
+          </p>
+          <div class="hero-actions">
+            <a class="btn primary" href="#demo" data-icon="ArrowDown">デモを動かす</a>
+            <a class="btn" href="#how" data-icon="Layers">しくみを見る</a>
+          </div>
+          <ul class="proof" aria-label="実機で確かめた結果">
+            <li><b id="proof-wrong">0</b><span id="proof-wrong-label">誤答</span></li>
+            <li><b id="proof-double">0</b><span id="proof-double-label">二重予約</span></li>
+            <li><b id="proof-sig">0</b><span id="proof-sig-label">署名の誤判定</span></li>
+          </ul>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <div class="mini-phone">
+            <div class="mini-screen">
+              <div class="mini-bubble me" style="--t: 0.4s">金曜の午後にカットできますか？</div>
+              <div class="mini-bubble bot" style="--t: 1.6s">金曜(11/6)の午後の空きです。カードから時間を選んでください。</div>
+              <div class="mini-card" style="--t: 2.6s"><strong>11月6日(金)</strong>12:00　13:00　14:00　15:30</div>
+              <div class="mini-bubble me" style="--t: 3.6s">14時でお願いします</div>
+              <div class="mini-card" style="--t: 4.6s"><strong>予約が確定しました</strong>11月6日(金) 14:00〜15:00 カット</div>
+            </div>
+          </div>
+          <div class="float-card fc-cal">
+            <span class="row"><span class="hero-pin" data-icon="Pin"></span><b>11/6(金) 14:00</b></span>
+            <span>カット・あおい 様</span>
+          </div>
+          <div class="float-card fc-handoff">
+            <span class="row" data-icon="Headset"><b>スタッフに引き継ぎ</b></span>
+            <span>営業時間外は「明日 10:00 以降に返信」</span>
+          </div>
+        </div>
+        <a class="scroll-cue" href="#demo" aria-label="体験へ" data-icon="ArrowDown"></a>
+      </section>
+
+      <section class="stage" id="demo" aria-labelledby="demo-title">
+        <div class="stage-head">
+          <div class="stage-title">
+            <h2 id="demo-title">体験：架空の美容室「ヘアサロン こもれび」</h2>
+            <p>光っているボタンを押すか、送信を押すと、次のやりとりを再生します。</p>
+          </div>
+          <p class="replay-badge" id="replay-badge" data-icon="Info"></p>
+          <div class="scenarios" id="scenarios" role="group" aria-label="体験する場面"></div>
+          <div class="seg stage-tabs" role="group" aria-label="表示する画面">
+            <button type="button" data-tab="chat" aria-pressed="true">トーク</button>
+            <button type="button" data-tab="admin" aria-pressed="false">管理画面</button>
+          </div>
+        </div>
+        <div class="stage-body" id="stage-body" data-tab="chat">
+          <div class="pane pane-phone">
+            <div id="phone-host" style="height: 100%; min-height: 0; display: flex; justify-content: center; width: 100%"></div>
+            <div class="player-bar">
+              <button type="button" class="btn small" id="restart" data-icon="RotateCcw">最初から</button>
+              <button type="button" class="btn small" id="auto" aria-pressed="false" data-icon="Play">自動で再生</button>
+              <span class="chip" id="progress" aria-live="polite">0 / 0</span>
+            </div>
+          </div>
+          <div class="pane pane-admin" id="admin-host"></div>
+        </div>
+      </section>
+
+      <section class="section" id="how" aria-labelledby="how-title">
+        <div class="section-head reveal">
+          <p class="kicker">しくみ</p>
+          <h2 id="how-title">1 通のメッセージが、予約表に入るまで</h2>
+          <p>
+            Webhook はすぐに 200 を返し、AI の処理は利用者ごとの Durable Object で順番に行います。予約の書き込みは D1 のトランザクション 1
+            つで行います。
+          </p>
+        </div>
+        <ol class="flow">
+          <li class="reveal" style="--d: 0s">
+            <h3>署名を確かめる</h3>
+            <p>受け取ったバイト列をチャネルシークレットで HMAC-SHA256 し、<code>X-Line-Signature</code> と定数時間で比べる。</p>
+          </li>
+          <li class="reveal" style="--d: 0.08s">
+            <h3>再送を 1 回にまとめる</h3>
+            <p><code>webhookEventId</code> で重複を除き、同じ人のメッセージは届いた順に 1 件ずつ処理する。</p>
+          </li>
+          <li class="reveal" style="--d: 0.16s">
+            <h3>AI が道具を選ぶ</h3>
+            <p>
+              Claude が「店の情報」「空き枠」「仮予約」「確定」「変更・取り消し」「引き継ぎ」の道具を呼ぶ。お客様の範囲はサーバーが決める。
+            </p>
+          </li>
+          <li class="reveal" style="--d: 0.24s">
+            <h3>鍵で二重予約を防ぐ</h3>
+            <p>席 × 30 分のコマごとに主キーを持つ鍵の表に、予約の行と一緒に書く。同時に来ても通るのは席の数だけ。</p>
+          </li>
+          <li class="reveal" style="--d: 0.32s">
+            <h3>返事とカードを送る</h3>
+            <p>返信トークンで返し、期限切れなら再送キー付きのプッシュに切り替える。空き枠・確認・確定は Flex Message。</p>
+          </li>
+        </ol>
+      </section>
+
+      <section class="section" id="safety" aria-labelledby="safety-title">
+        <div class="section-head reveal">
+          <p class="kicker">安心して任せるための工夫</p>
+          <h2 id="safety-title">答えない・確定と言わない・人に渡す</h2>
+        </div>
+        <div class="bento">
+          <article class="w4 wide-sm reveal">
+            <span class="ico" data-icon="ShieldCheck"></span>
+            <h3>店の情報にないことは答えない</h3>
+            <p>
+              料金・営業時間・駐車場などは、管理画面で登録した内容を道具で取り出したものだけを根拠にします。載っていない施術や料金は推測せず、スタッフへの引き継ぎを案内します。
+            </p>
+          </article>
+          <article class="w2 reveal" style="--d: 0.08s">
+            <span class="ico" data-icon="CircleCheck"></span>
+            <h3>「確定しました」は確定のあとだけ</h3>
+            <p>
+              確定の道具が成功していない返事に「確定しました」があれば、出す前に差し替えます。仮予約と確定は同じ返事の中では行いません。
+            </p>
+          </article>
+          <article class="w2 reveal">
+            <span class="ico" data-icon="LockKeyhole"></span>
+            <h3>指示の書き換えに乗らない</h3>
+            <p>道具は「今話しているお客様」の予約にしか触れません。ほかの人の予約番号を渡されても、サーバーが拒みます。</p>
+          </article>
+          <article class="w2 reveal" style="--d: 0.08s">
+            <span class="ico" data-icon="MoonStar"></span>
+            <h3>営業時間外は次の開店を伝える</h3>
+            <p>夜の相談はスタッフに引き継ぎ、「明日 10:00 以降に返信」と伝えます。同じ自動応答は重ねません。</p>
+          </article>
+          <article class="w2 reveal" style="--d: 0.16s">
+            <span class="ico" data-icon="Fingerprint"></span>
+            <h3>記録に個人情報を残さない</h3>
+            <p>
+              電話番号・メール・カード番号は保存の前に伏せ字にし、AI にも伏せ字の文だけを渡します。記録（ログ）には本文も名前も出しません。
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="numbers" aria-labelledby="numbers-title">
+        <div class="section-head reveal">
+          <p class="kicker">実機で確かめた数字</p>
+          <h2 id="numbers-title">本番と同じコードを、wrangler dev ＋ D1 で動かして測りました</h2>
+        </div>
+        <ul class="numbers" id="numbers-list"></ul>
+        <p class="numbers-note" id="numbers-note"></p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>登場する店・人・予約はすべて架空です。LINE は LY Corporation の商標です。</span>
+      <span>MIT License · Ryou Koshimizu</span>
+    </footer>
+  </body>
+</html>

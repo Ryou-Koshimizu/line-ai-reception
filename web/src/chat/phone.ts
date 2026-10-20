@@ -4,11 +4,7 @@ import { icon, type IconName } from '../lib/icons';
 import { renderFlex } from './flex';
 import type { LineAction, LineMessage } from '../types';
 
-export type Expect =
-  | { kind: 'text'; text: string }
-  | { kind: 'tap'; data: string; label: string }
-  | { kind: 'follow' }
-  | null;
+export type Expect = { kind: 'text'; text: string } | { kind: 'tap'; data: string; label: string } | { kind: 'follow' } | null;
 
 const RICH_MENU: Array<{ label: string; data: string; icon: IconName }> = [
   { label: '予約する', data: 'a=book', icon: 'CalendarCheck' },
@@ -41,10 +37,25 @@ export class Phone {
     this.send.addEventListener('click', () => this.expect?.kind === 'text' && this.opts.onAct());
     this.richmenu = h('div', { class: 'richmenu', id: 'richmenu', role: 'group', 'aria-label': 'リッチメニュー' });
     for (const t of RICH_MENU) {
-      const b = h('button', { type: 'button', class: 'rm-tile', 'data-action': JSON.stringify({ type: 'postback', label: t.label, data: t.data }), disabled: true }, icon(t.icon), t.label);
+      const b = h(
+        'button',
+        {
+          type: 'button',
+          class: 'rm-tile',
+          'data-action': JSON.stringify({ type: 'postback', label: t.label, data: t.data }),
+          disabled: true,
+        },
+        icon(t.icon),
+        t.label,
+      );
       this.richmenu.append(b);
     }
-    this.rmBar = h('button', { type: 'button', class: 'rm-bar', 'aria-expanded': 'false', 'aria-controls': 'richmenu' }, 'メニュー', icon('ChevronUp'));
+    this.rmBar = h(
+      'button',
+      { type: 'button', class: 'rm-bar', 'aria-expanded': 'false', 'aria-controls': 'richmenu' },
+      'メニュー',
+      icon('ChevronUp'),
+    );
     this.rmBar.addEventListener('click', () => this.toggleRichMenu());
     const top = h(
       'div',
@@ -77,6 +88,7 @@ export class Phone {
 
   reset(): void {
     this.log.replaceChildren();
+    this.toggleRichMenu(false);
     this.quick.replaceChildren();
     this.lastDay = '';
     this.setExpect(null);
@@ -105,8 +117,24 @@ export class Phone {
     const bubble = content.text
       ? h('div', { class: 'bubble', text: content.text })
       : h('div', { class: 'bubble tap' }, icon('Hand'), content.tap ?? '');
-    const msg = h('div', { class: `msg me ${animate ? 'pop' : ''}` }, h('div', { class: 'stack' }, bubble), h('div', { class: 'meta' }, h('span', { text: '既読' }), h('span', { text: time })));
+    const msg = h(
+      'div',
+      { class: `msg me ${animate ? 'pop' : ''}` },
+      h('div', { class: 'stack' }, bubble),
+      h('div', { class: 'meta' }, h('span', { text: '既読' }), h('span', { text: time })),
+    );
     this.log.append(msg);
+    this.scroll();
+  }
+
+  /** 友だち追加の場面：トークの真ん中に「友だち追加」を出す */
+  followButton(onClick: () => void): void {
+    const b = h('button', { type: 'button', class: 'btn primary small follow-btn next pop' }, icon('UserRound'), '友だち追加する');
+    b.addEventListener('click', () => {
+      b.remove();
+      onClick();
+    });
+    this.log.append(h('div', { class: 'sys-note follow-wrap' }, b));
     this.scroll();
   }
 
@@ -136,7 +164,12 @@ export class Phone {
         'div',
         { class: `msg bot ${animate ? 'pop' : ''}`, style: delay },
         h('span', { class: `avatar ${opts.staff ? 'staff' : ''}` }, icon(opts.staff ? 'UserRound' : 'Store')),
-        h('div', { class: 'stack' }, i === 0 ? h('span', { class: 'who', text: opts.staff ? 'スタッフ' : this.opts.title }) : null, content),
+        h(
+          'div',
+          { class: 'stack' },
+          i === 0 ? h('span', { class: 'who', text: opts.staff ? 'スタッフ' : this.opts.title }) : null,
+          content,
+        ),
         h('div', { class: 'meta' }, h('span', { text: time })),
       );
       this.log.append(msg);
@@ -148,7 +181,16 @@ export class Phone {
     const last = messages.at(-1);
     this.quick.replaceChildren();
     for (const [i, item] of (last?.quickReply?.items ?? []).entries()) {
-      this.quick.append(h('button', { type: 'button', class: 'qr', style: `--i:${i}`, 'data-action': JSON.stringify(item.action), disabled: true, text: item.action.label }));
+      this.quick.append(
+        h('button', {
+          type: 'button',
+          class: 'qr',
+          style: `--i:${i}`,
+          'data-action': JSON.stringify(item.action),
+          disabled: true,
+          text: item.action.label,
+        }),
+      );
     }
     this.scroll();
   }

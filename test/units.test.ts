@@ -93,3 +93,16 @@ describe('LINE のメッセージの上限', () => {
     expect(json).toContain('4,800円');
   });
 });
+
+describe('リッチメニュー', () => {
+  it('6 つの領域が 2500×1686 をすき間なく覆い、ラベルは 20 文字以内', async () => {
+    const { richMenuDefinition } = await import('../src/line/richmenu');
+    const def = richMenuDefinition();
+    expect(def.areas).toHaveLength(6);
+    const area = def.areas.reduce((n, a) => n + a.bounds.width * a.bounds.height, 0);
+    expect(area).toBe(2500 * (843 * 2));
+    expect(def.areas.every((a) => a.bounds.x + a.bounds.width <= 2500 && a.bounds.y + a.bounds.height <= 1686)).toBe(true);
+    expect(def.areas.every((a) => a.action.label.length <= 20)).toBe(true);
+    expect(def.chatBarText.length).toBeLessThanOrEqual(14);
+  });
+});

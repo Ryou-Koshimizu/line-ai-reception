@@ -6,7 +6,6 @@
   grid-template-rows: auto minmax(0, 1fr);
   gap: clamp(8px, 1.6svh, 18px);
   padding: clamp(8px, 1.6svh, 18px) var(--gutter) clamp(10px, 2svh, 22px);
-  scroll-margin-top: var(--header-h);
 }
 .stage-head {
   display: flex;
@@ -99,6 +98,7 @@
 }
 .pane-phone {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   justify-items: center;
   grid-template-rows: minmax(0, 1fr) auto;
   gap: 10px;
@@ -114,11 +114,11 @@
 }
 
 @media (max-width: 899px) {
-  .stage {
-    grid-template-rows: auto auto minmax(0, 1fr);
-  }
   .stage-head .replay-badge {
     order: 3;
+  }
+  .stage-head .stage-tabs {
+    order: 4;
   }
   .scenarios {
     margin-left: 0;
@@ -134,37 +134,40 @@
   .stage-body[data-tab='admin'] .pane-phone {
     display: none;
   }
-  .phone {
+  .stage-body .phone {
     --ph-w: 100%;
     padding: 0;
     border-radius: 24px;
     box-shadow: var(--raise-sm);
   }
-  .phone::before {
+  .stage-body .phone::before {
     display: none;
   }
-  .screen {
+  .stage-body .screen {
     border-radius: 24px;
   }
-  .chat-top {
+  .stage-body .chat-top {
     padding-top: 10px;
+  }
+  .stage-title p {
+    display: none;
   }
 }
 @media (max-height: 560px) {
-  .phone {
+  .stage-body .phone {
     padding: 0;
     border-radius: 20px;
   }
-  .phone::before {
+  .stage-body .phone::before {
     display: none;
   }
-  .screen {
+  .stage-body .screen {
     border-radius: 20px;
   }
-  .chat-top {
+  .stage-body .chat-top {
     padding: 6px 10px;
   }
-  .chat-top .ic {
+  .stage-body .chat-top .ic {
     display: none;
   }
   .stage-title p,
@@ -174,18 +177,55 @@
   .player-bar .btn {
     min-height: 34px;
   }
-  .richmenu.open {
+  .stage-body .richmenu.open {
     max-height: 120px;
   }
-  .rm-tile {
+  .stage-body .rm-tile {
     min-height: 40px;
   }
-  .rm-tile .lucide {
+  .stage-body .rm-tile .lucide {
     display: none;
+  }
+}
+@media (max-height: 500px) {
+  .stage-head {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .stage-head .scenarios {
+    flex: 1;
+    min-width: 0;
+    padding: 4px 2px 6px;
+  }
+  .stage-head .replay-badge {
+    order: 0;
+    flex: none;
+    padding: 4px 10px;
+  }
+  .scenarios button {
+    min-height: 34px;
+  }
+  .player-bar {
+    display: none;
+  }
+  .pane-phone {
+    grid-template-rows: minmax(0, 1fr);
+  }
+}
+@media (max-height: 500px) and (max-width: 899px) {
+  .stage-head .stage-tabs {
+    order: 5;
+    flex: none;
+  }
+  .stage-head .replay-badge b {
+    font-size: 0.72rem;
   }
 }
 @media (max-height: 420px) {
   .stage-title {
+    display: none;
+  }
+  .stage-body .chat-top {
     display: none;
   }
 }
@@ -388,12 +428,24 @@
 .cal-col {
   position: relative;
   border-radius: 10px;
-  background: repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--hour) - 1px), var(--line) calc(var(--hour) - 1px), var(--line) var(--hour));
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(var(--hour) - 1px),
+    var(--line) calc(var(--hour) - 1px),
+    var(--line) var(--hour)
+  );
 }
 .cal-col.closed {
   background:
     repeating-linear-gradient(135deg, transparent 0 8px, rgba(110, 128, 158, 0.12) 8px 10px),
-    repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--hour) - 1px), var(--line) calc(var(--hour) - 1px), var(--line) var(--hour));
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(var(--hour) - 1px),
+      var(--line) calc(var(--hour) - 1px),
+      var(--line) var(--hour)
+    );
 }
 .cal-col .closed-label {
   position: absolute;
@@ -833,4 +885,59 @@
 }
 .admin-body {
   view-transition-name: admin-panel;
+}
+
+/* ログイン（入口の画面はヒーローとして扱う） */
+.hero.login {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+}
+.login-card {
+  width: min(560px, 100%);
+  padding: clamp(18px, 4svh, 40px) clamp(18px, 4vw, 40px);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--raise);
+}
+.login-card h1 {
+  font-size: clamp(1.2rem, min(4vw, 6svh), 2.2rem);
+}
+.token-label {
+  display: grid;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 0.86rem;
+}
+.form-error {
+  min-height: 1.4em;
+  font-size: 0.84rem;
+  color: var(--rose);
+  font-weight: 700;
+}
+.form-error:empty {
+  display: none;
+}
+.stage.app {
+  grid-template-rows: minmax(0, 1fr);
+}
+@media (max-height: 460px) {
+  .login-card .lead {
+    display: none;
+  }
+}
+/* 背の低い横向きの画面：数字のタイルと見出しを省き、予約表の操作を最初の画面に入れる */
+@media (max-height: 500px) {
+  .admin {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+  .admin-top h3 {
+    display: none;
+  }
+  .bento-admin .stat,
+  .tile-cal > h4 {
+    display: none;
+  }
+  .tile-cal {
+    padding: 10px 12px;
+  }
 }

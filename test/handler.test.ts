@@ -169,7 +169,9 @@ describe('途中で止まった処理のやり直し', () => {
     await seedShop();
     const line = fakeLine({ replyFails: true });
     const ev = postbackEvent('U1', 'a=menu');
-    await env.DB.prepare('INSERT INTO processed_events (event_id, received_at) VALUES (?1, ?2)').bind(ev.webhookEventId, NOW.toISOString()).run();
+    await env.DB.prepare('INSERT INTO processed_events (event_id, received_at) VALUES (?1, ?2)')
+      .bind(ev.webhookEventId, NOW.toISOString())
+      .run();
     await handleEvent(deps(line), ev); // LINE の再送としては読み飛ばす
     expect(line.sent).toHaveLength(0);
     await handleEvent(deps(line), ev, { retry: true });

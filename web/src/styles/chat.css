@@ -581,3 +581,11 @@
 .rm-tile:disabled .lucide {
   color: #7b8aa1;
 }
+
+.follow-wrap {
+  background: transparent;
+  padding: 12px 0;
+}
+.follow-btn.next {
+  animation: ring 1.6s ease-out infinite;
+}

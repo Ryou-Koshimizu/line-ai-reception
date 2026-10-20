@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>管理画面｜AI 受付・予約ボット</title>
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#e3e9f1" />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <script type="module" src="../src/admin/main.ts"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="../">
+        <span class="brand-mark" data-icon="CalendarCheck"></span>
+        <span class="brand-text"><strong>管理画面</strong><span>AI 受付・予約ボット</span></span>
+      </a>
+      <nav class="nav" aria-label="管理画面">
+        <span class="chip" id="role" hidden></span>
+        <button type="button" class="btn small" id="logout" hidden data-icon="LogOut" aria-label="ログアウト">
+          <span class="label">ログアウト</span>
+        </button>
+      </nav>
+    </header>
+    <main>
+      <section class="hero login" id="login" aria-labelledby="login-title">
+        <form class="hero-copy login-card" id="login-form">
+          <p class="eyebrow" data-icon="KeyRound">店長・スタッフ用</p>
+          <h1 id="login-title">管理画面にログイン</h1>
+          <p class="lead">
+            Worker
+            に設定した鍵を入れてください。店長の鍵（ADMIN_TOKEN）は店の情報も編集でき、スタッフの鍵（STAFF_TOKEN）は予約と会話を扱えます。<span
+              class="more"
+              >鍵はこのタブの中だけに保存します。</span
+            >
+          </p>
+          <label class="token-label"
+            ><span>鍵</span
+            ><input class="field" id="token" type="password" autocomplete="current-password" required minlength="16" maxlength="512"
+          /></label>
+          <p class="form-error" id="login-error" role="alert"></p>
+          <div class="hero-actions">
+            <button class="btn primary" type="submit" data-icon="LockKeyhole">ログイン</button>
+            <a class="btn" href="../#demo" data-icon="Play">公開デモを見る</a>
+          </div>
+        </form>
+      </section>
+      <section class="stage app" id="app" hidden aria-label="管理画面">
+        <div id="admin-host" class="pane" style="height: 100%"></div>
+      </section>
+    </main>
+  </body>
+</html>

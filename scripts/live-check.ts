@@ -228,7 +228,11 @@ async function runTurn(ctx: Ctx, s: Scenario, turn: Turn, prev: unknown[], prelu
   const ms = Date.now() - sentAt;
   return {
     at: turn.at,
-    user: turn.follow ? { follow: true } : turn.say ? { text: turn.say } : { tap: tapLabel ?? turn.label ?? String(turn.tap ?? data), data },
+    user: turn.follow
+      ? { follow: true }
+      : turn.say
+        ? { text: turn.say }
+        : { tap: tapLabel ?? turn.label ?? String(turn.tap ?? data), data },
     bot,
     tools: toolsBetween(ctx, s.name, sentAt, Date.now()),
     ms,
@@ -539,7 +543,14 @@ async function main() {
         .filter((r) => SCENARIOS.find((s) => s.id === r.id)?.demo)
         .map((r) => {
           const s = SCENARIOS.find((x) => x.id === r.id)!;
-          return { id: r.id, title: s.demo!.title, summary: s.demo!.summary, ai: r.ai, user: { name: s.name }, turns: r.records };
+          return {
+            id: r.id,
+            title: s.demo!.title,
+            summary: s.demo!.summary,
+            ai: r.ai,
+            user: { name: s.name, id: s.user },
+            turns: r.records,
+          };
         });
       writeFileSync(
         join(ROOT, 'web/src/demo/recordings.json'),

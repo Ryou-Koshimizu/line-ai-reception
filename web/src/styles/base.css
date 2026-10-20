@@ -1,6 +1,5 @@
 /* ソフトUI（ニューモーフィズム）＋ベント。淡い灰青の地から、面が盛り上がる・へこむ。
    文字は地との対比 4.5:1 以上を守る（--ink-3 が最も薄い文字色）。 */
-@import '@fontsource/zen-maru-gothic/500.css';
 @import '@fontsource/zen-maru-gothic/700.css';
 
 :root {
@@ -32,7 +31,8 @@
   --radius-sm: 11px;
   --gutter: clamp(16px, 3.4vw, 40px);
   --header-h: 80px;
-  --font: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Yu Gothic UI', Meiryo, sans-serif;
+  --font:
+    -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Yu Gothic UI', Meiryo, sans-serif;
   --font-round: 'Zen Maru Gothic', var(--font);
   /* 盛り上がり・へこみ */
   --raise: 9px 9px 20px var(--lo), -9px -9px 20px var(--hi);
@@ -41,7 +41,25 @@
   --press: inset 4px 4px 9px var(--lo), inset -4px -4px 9px var(--hi);
   --press-sm: inset 2px 2px 5px var(--lo), inset -2px -2px 5px var(--hi);
   /* バネ（少し行き過ぎて戻る） */
-  --spring: linear(0, 0.012 0.7%, 0.05 1.5%, 0.2 3.2%, 0.44 5.2%, 0.77 8%, 0.97 10.6%, 1.08 13.2%, 1.12 15.6%, 1.11 18%, 1.065 21.5%, 1.02 25.5%, 0.993 30%, 0.987 35%, 0.996 46%, 1.001 60%, 1);
+  --spring: linear(
+    0,
+    0.012 0.7%,
+    0.05 1.5%,
+    0.2 3.2%,
+    0.44 5.2%,
+    0.77 8%,
+    0.97 10.6%,
+    1.08 13.2%,
+    1.12 15.6%,
+    1.11 18%,
+    1.065 21.5%,
+    1.02 25.5%,
+    0.993 30%,
+    0.987 35%,
+    0.996 46%,
+    1.001 60%,
+    1
+  );
   --spring-soft: linear(0, 0.03 2%, 0.13 5%, 0.4 11%, 0.7 18%, 0.9 25%, 1.01 32%, 1.035 38%, 1.03 46%, 1.005 62%, 1);
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -348,4 +366,7 @@ svg {
     opacity: 1;
     transform: none;
   }
+}
+[hidden] {
+  display: none !important;
 }

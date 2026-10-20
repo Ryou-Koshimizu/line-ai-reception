@@ -130,8 +130,12 @@ async function runCodex(
       child.on('error', reject);
       child.on('close', (code) => {
         clearTimeout(timer);
-        if (code === 0) resolve(stdout);
-        else reject(new Error(`codex exited ${code}: ${stderr.slice(-300)}`));
+        const failed = /"type":"(turn\.failed|error)"/.test(stdout);
+        if (code === 0 && !failed) resolve(stdout);
+        else {
+          const msg = /"message":"([^"]+)"/.exec(stdout)?.[1] ?? stderr.slice(-300);
+          reject(new Error(`codex exited ${code}: ${msg}`));
+        }
       });
       child.stdin.end(input);
     });
@@ -268,6 +272,10 @@ export function startBridge(opts: { port: number; model: string; effort: string;
     const url = new URL(req.url ?? '/', 'http://bridge');
     if (url.pathname.startsWith('/anthropic/v1/messages')) return void anthropic(req, res);
     if (url.pathname.startsWith('/line/')) return void line(req, res, url.pathname.slice('/line'.length));
+    if (url.pathname === '/__log') {
+      res.writeHead(200, { 'content-type': 'application/json' });
+      return void res.end(JSON.stringify(lineCalls));
+    }
     res.writeHead(404);
     res.end();
   });

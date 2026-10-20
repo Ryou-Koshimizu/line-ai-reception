@@ -9,6 +9,7 @@ export default defineConfig({
     outDir: resolve(import.meta.dirname, 'dist'),
     emptyOutDir: true,
     target: 'es2022',
+    assetsInlineLimit: 0, // フォントを data: で埋め込まない（CSP の font-src 'self' を守る）
     rollupOptions: {
       input: {
         demo: resolve(import.meta.dirname, 'index.html'),

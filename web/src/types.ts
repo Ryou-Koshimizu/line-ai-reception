@@ -60,7 +60,8 @@ export interface ToolUse {
   input: unknown;
   ok: boolean;
 }
-export type LineAction = { type: 'postback'; label: string; data: string; displayText?: string } | { type: 'message'; label: string; text: string };
+export type LineAction =
+  { type: 'postback'; label: string; data: string; displayText?: string } | { type: 'message'; label: string; text: string };
 export type LineMessage =
   | { type: 'text'; text: string; quickReply?: { items: Array<{ type: 'action'; action: LineAction }> } }
   | { type: 'flex'; altText: string; contents: FlexNode; quickReply?: { items: Array<{ type: 'action'; action: LineAction }> } };
@@ -80,7 +81,7 @@ export interface Recording {
   title: string;
   summary: string;
   ai: boolean;
-  user: { name: string };
+  user: { name: string; id: string };
   turns: TurnRecord[];
 }
 export interface Recordings {
