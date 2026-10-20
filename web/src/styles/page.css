@@ -328,6 +328,14 @@
     display: none;
   }
 }
+/* 折りたたみスマホ（幅 340px 以下）：Linux のフォント寸法でも肩書きの札が右へはみ出さない大きさに */
+@media (max-width: 340px) {
+  .eyebrow {
+    padding: 5px 10px;
+    font-size: 0.68rem;
+    overflow-wrap: anywhere;
+  }
+}
 .scroll-cue {
   position: absolute;
   left: 50%;
