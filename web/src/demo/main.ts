@@ -30,10 +30,14 @@ const evidence = evidenceJson as unknown as {
     ai_turn_median_ms: number;
     ai_turns: number;
     scenarios: number;
+    ai_scenarios: number;
   };
 };
 
 hydrateIcons();
+
+/** UTC の時刻を、日本時間の日付（YYYY-MM-DD）にする */
+const jstDate = (iso: string) => new Date(new Date(iso).getTime() + 9 * 3600_000).toISOString().slice(0, 10);
 
 // ── ヘッダーの影
 const header = document.querySelector('.site-header')!;
@@ -57,7 +61,7 @@ for (const [id, value, label] of proof) {
 
 // ── 確かめた数字の一覧
 const numbers: Array<[number, string, string]> = [
-  [t.wrong_answers, '件', `誤答。実AIとの会話 ${t.scenarios} 場面・${t.checks} 項目の判定のうち`],
+  [t.wrong_answers, '件', `誤答。会話の筋書き ${t.scenarios} 場面（うち実AI ${t.ai_scenarios} 場面）・${t.checks} 項目の判定のうち`],
   [
     t.double_bookings,
     '件',
@@ -84,7 +88,7 @@ numbers.forEach(([value, unit, label], i) => {
   );
 });
 document.getElementById('numbers-note')!.textContent =
-  `測定：${evidence.runtime}。AI は ${evidence.model}。Worker は本番と同じ Claude Messages API の呼び出しを行い、宛先だけをこの推論につないで測りました。測定日 ${evidence.finished_at.slice(0, 10)}。`;
+  `測定：${evidence.runtime}。AI は ${evidence.model}。Worker は本番と同じ Claude Messages API の呼び出しを行い、宛先だけをこの推論につないで測りました。測定日 ${jstDate(evidence.finished_at)}。`;
 
 // ── 体験（トーク＋管理画面）
 const badge = document.getElementById('replay-badge')!;
@@ -93,7 +97,7 @@ badge.append(
     'span',
     {},
     h('b', { text: '実AIの記録を再生しています。' }),
-    h('span', { class: 'more', text: ` 記録 ${recordings.recorded_at.slice(0, 10)}・${recordings.model}` }),
+    h('span', { class: 'more', text: ` 記録 ${jstDate(recordings.recorded_at)}・${recordings.model}` }),
   ),
 );
 

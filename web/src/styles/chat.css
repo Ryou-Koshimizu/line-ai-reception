@@ -76,6 +76,10 @@
   gap: 10px;
   scroll-behavior: smooth;
 }
+.chat-log > * {
+  /* 縦に並べたとき、横スクロールのカードが縮んで消えないように */
+  flex-shrink: 0;
+}
 .chat-log::-webkit-scrollbar {
   width: 0;
 }

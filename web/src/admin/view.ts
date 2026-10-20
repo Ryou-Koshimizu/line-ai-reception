@@ -129,7 +129,7 @@ export class AdminView {
       this.tabs.convs,
       this.tabs.shop,
     );
-    this.body = h('div', { class: 'admin-body', tabindex: '-1' });
+    this.body = h('div', { class: 'admin-body', tabindex: '0', role: 'region', 'aria-label': '管理画面の中身' });
     this.el = h(
       'section',
       { class: 'admin', 'aria-label': '管理画面' },
@@ -173,8 +173,18 @@ export class AdminView {
   }
 
   private async render(): Promise<void> {
-    if (this.tab === 'bookings') this.body.replaceChildren(await this.renderBookings());
-    else if (this.tab === 'convs') this.body.replaceChildren(await this.renderConvs());
+    if (this.tab === 'bookings') {
+      this.body.replaceChildren(await this.renderBookings());
+      // 新しく入った予約が見えるところまで、管理画面の中だけを送る（ページ全体は動かさない）
+      const fresh = this.body.querySelector<HTMLElement>('.bk.fresh');
+      if (fresh) {
+        // 出てくる動きの途中（ずらしている最中）の位置ではなく、置かれる位置で測る
+        const col = fresh.parentElement!;
+        const top = col.getBoundingClientRect().top - this.body.getBoundingClientRect().top + this.body.scrollTop + fresh.offsetTop;
+        if (top + fresh.offsetHeight + 24 > this.body.scrollTop + this.body.clientHeight || top < this.body.scrollTop)
+          requestAnimationFrame(() => (this.body.scrollTop = Math.max(0, top - 120)));
+      }
+    } else if (this.tab === 'convs') this.body.replaceChildren(await this.renderConvs());
     else this.body.replaceChildren(this.renderShop());
     await this.updateBadge();
   }
@@ -449,7 +459,7 @@ export class AdminView {
       this.onModeChange?.(c.line_user_id, next);
       setTimeout(() => transition(() => void this.render()), 320);
     });
-    const thread = h('div', { class: 'thread', role: 'log', 'aria-label': `${c.display_name} さんとの会話` });
+    const thread = h('div', { class: 'thread', role: 'log', 'aria-label': `${c.display_name} さんとの会話`, tabindex: '0' });
     for (const m of await this.source.messages(c.line_user_id)) thread.append(h('div', { class: `t ${m.role}`, text: m.text }));
     const field = h('input', {
       class: 'field',

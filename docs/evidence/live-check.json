@@ -1,5 +1,5 @@
 {
-  "started_at": "2026-10-20T11:29:10.443Z",
+  "started_at": "2026-10-20T16:15:05.753Z",
   "runtime": "wrangler dev（workerd）＋ ローカル D1 ＋ Durable Objects",
   "model": "gpt-6.1-sol（Codex CLI 経由・推論の深さ low）",
   "model_note": "Worker は本番と同じ Claude Messages API の呼び出しを行い、宛先だけを Codex CLI につないだ受け口に向けた",
@@ -33,14 +33,37 @@
       "id": "booking-chat",
       "title": "会話で予約（空き枠 → 仮予約 → 確定）",
       "ai": true,
-      "turns": 0,
-      "passed": 0,
-      "failed": 1,
+      "turns": 4,
+      "passed": 7,
+      "failed": 0,
       "checks": [
         {
-          "name": "最後まで進む",
-          "pass": false,
-          "detail": "Error: timeout: booking-chat reply"
+          "name": "友だち追加であいさつとボタンを出す",
+          "pass": true
+        },
+        {
+          "name": "1 通目：空き枠を探してカードを出す",
+          "pass": true
+        },
+        {
+          "name": "1 通目：この時点では予約を作らない",
+          "pass": true
+        },
+        {
+          "name": "2 通目：仮予約して確認カードを出す",
+          "pass": true
+        },
+        {
+          "name": "2 通目：同意の前に確定しない",
+          "pass": true
+        },
+        {
+          "name": "3 通目：同意を受けて確定する",
+          "pass": true
+        },
+        {
+          "name": "予約は 11/6(金) 14:00 のカット 1 件だけ",
+          "pass": true
         }
       ]
     },
@@ -74,14 +97,33 @@
       "id": "faq",
       "title": "よくある質問（駐車場・料金と時間）",
       "ai": true,
-      "turns": 0,
-      "passed": 0,
-      "failed": 1,
+      "turns": 2,
+      "passed": 6,
+      "failed": 0,
       "checks": [
         {
-          "name": "最後まで進む",
-          "pass": false,
-          "detail": "Error: timeout: faq reply"
+          "name": "駐車場：店の情報を取り出して答える",
+          "pass": true
+        },
+        {
+          "name": "駐車場：コインパーキングを案内する",
+          "pass": true
+        },
+        {
+          "name": "駐車場：専用駐車場があるとは言わない",
+          "pass": true
+        },
+        {
+          "name": "料金：9,800円と答える",
+          "pass": true
+        },
+        {
+          "name": "時間：120分（2時間）と答える",
+          "pass": true
+        },
+        {
+          "name": "予約は作らない",
+          "pass": true
         }
       ]
     },
@@ -89,14 +131,37 @@
       "id": "unknown-handoff",
       "title": "店の情報にない質問 → スタッフへ引き継ぎ（営業中）",
       "ai": true,
-      "turns": 0,
-      "passed": 0,
-      "failed": 1,
+      "turns": 3,
+      "passed": 7,
+      "failed": 0,
       "checks": [
         {
-          "name": "最後まで進む",
-          "pass": false,
-          "detail": "Error: timeout: unknown-handoff reply"
+          "name": "料金を作らない（「円」を出さない）",
+          "pass": true
+        },
+        {
+          "name": "できるとは言わない",
+          "pass": true
+        },
+        {
+          "name": "店の情報にないこと・スタッフに確認できることを伝える",
+          "pass": true
+        },
+        {
+          "name": "引き継ぎを実行する",
+          "pass": true
+        },
+        {
+          "name": "引き継いだことをお客様に伝える",
+          "pass": true
+        },
+        {
+          "name": "会話が「人が対応」になる",
+          "pass": true
+        },
+        {
+          "name": "引き継ぎ後のメッセージに AI は返事をしない",
+          "pass": true
         }
       ]
     },
@@ -246,19 +311,20 @@
   "totals": {
     "scenarios": 11,
     "ai_scenarios": 10,
-    "checks": 25,
-    "wrong_answers": 3,
+    "checks": 42,
+    "wrong_answers": 0,
     "double_bookings": 0,
     "signature_misjudgements": 0,
     "duplicate_replies": 0,
     "worker_errors": 0,
-    "model_errors": 1,
+    "model_errors": 0,
+    "model_error_samples": [],
     "pii_in_stored_messages": 0,
-    "model_calls": 33,
-    "ai_turns": 11,
-    "ai_turn_median_ms": 14641,
-    "ai_turn_max_ms": 25342
+    "model_calls": 37,
+    "ai_turns": 19,
+    "ai_turn_median_ms": 11601,
+    "ai_turn_max_ms": 19722
   },
-  "finished_at": "2026-10-20T11:35:07.245Z",
-  "passed": false
+  "finished_at": "2026-10-20T16:19:36.170Z",
+  "passed": true
 }

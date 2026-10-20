@@ -30,8 +30,8 @@ export class Phone {
     host: HTMLElement,
     private opts: { title: string; onAct: () => void },
   ) {
-    this.log = h('div', { class: 'chat-log', role: 'log', 'aria-live': 'polite', 'aria-label': 'トーク' });
-    this.quick = h('div', { class: 'quick', role: 'group', 'aria-label': 'クイックリプライ' });
+    this.log = h('div', { class: 'chat-log', role: 'log', 'aria-live': 'polite', 'aria-label': 'トーク', tabindex: '0' });
+    this.quick = h('div', { class: 'quick', role: 'group', 'aria-label': 'クイックリプライ', tabindex: '0' });
     this.field = h('div', { class: 'chat-field', 'aria-live': 'polite' }, h('span', { class: 'ghost hint', text: 'メッセージを入力' }));
     this.send = h('button', { type: 'button', class: 'send', 'aria-label': '送信', disabled: true }, icon('Send'));
     this.send.addEventListener('click', () => this.expect?.kind === 'text' && this.opts.onAct());

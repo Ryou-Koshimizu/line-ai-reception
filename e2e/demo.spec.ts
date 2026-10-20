@@ -18,7 +18,7 @@ test.describe('公開デモ（記録の再生）', () => {
   for (const s of scenarios) {
     test(`場面「${s.title}」を最後まで操作できる`, async ({ page }) => {
       await page.goto('/#demo');
-      await page.getByRole('button', { name: s.title }).click();
+      await page.locator('#scenarios').getByRole('button', { name: s.title }).click();
       await expect(page.locator('#progress')).toHaveText(
         new RegExp(`^0 / ${s.turns.filter((t) => !(t as { prelude?: boolean }).prelude).length}`),
       );
@@ -32,7 +32,7 @@ test.describe('公開デモ（記録の再生）', () => {
 
   test('予約の確定で予約表にピンが刺さり、日と週を切り替えられる', async ({ page }) => {
     await page.goto('/#demo');
-    await page.getByRole('button', { name: '会話で予約する' }).click();
+    await page.locator('#scenarios').getByRole('button', { name: '会話で予約する' }).click();
     await playToEnd(page);
     await expect(page.locator('.cal .bk', { hasText: 'あおい' })).toBeVisible();
     await expect(page.locator('.cal .pin')).toHaveCount(1);
@@ -44,7 +44,7 @@ test.describe('公開デモ（記録の再生）', () => {
 
   test('管理画面で「人が引き取る」にすると AI が止まり、スタッフの返信がトークに出る', async ({ page }) => {
     await page.goto('/#demo');
-    await page.getByRole('button', { name: 'よくある質問' }).click();
+    await page.locator('#scenarios').getByRole('button', { name: 'よくある質問' }).click();
     await page.locator('.admin-tabs').getByRole('button', { name: /会話/ }).click();
     const sw = page.getByRole('switch', { name: '人が引き取る' });
     await sw.click();

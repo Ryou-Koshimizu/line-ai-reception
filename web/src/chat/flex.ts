@@ -65,7 +65,7 @@ export function renderBubble(b: FlexNode, i = 0): HTMLElement {
 
 export function renderFlex(contents: FlexNode, altText: string): HTMLElement {
   if (contents.type === 'carousel') {
-    const wrap = h('div', { class: 'carousel', role: 'group', 'aria-label': altText });
+    const wrap = h('div', { class: 'carousel', role: 'group', 'aria-label': altText, tabindex: '0' });
     (contents.contents as FlexNode[]).forEach((b, i) => wrap.append(renderBubble(b, i)));
     return wrap;
   }

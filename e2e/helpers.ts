@@ -24,7 +24,10 @@ export async function sendWebhook(request: APIRequestContext, events: unknown[])
 export async function axe(page: Page, label: string) {
   // 出てくる動き（不透明度の変化）の途中で測らないよう、動きを止めた状態で測る
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.waitForTimeout(150);
+  await page.waitForFunction(() =>
+    document.getAnimations().every((a) => a.playState !== 'running' || a.effect?.getTiming().iterations === Infinity),
+  );
+  await page.waitForTimeout(100);
   const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
   const summary = result.violations.map(
     (v) =>

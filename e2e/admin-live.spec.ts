@@ -57,10 +57,15 @@ test.describe('管理画面（実運用）', () => {
     await axe(page, '管理画面（ログイン後）');
 
     // 予約表をその日へ送る
+    const target = `${Number(day.slice(5, 7))}月${Number(day.slice(8))}日`;
     for (let i = 0; i < 60; i++) {
-      if ((await page.locator('.cal-head .date').textContent())?.startsWith(`${Number(day.slice(5, 7))}月${Number(day.slice(8))}日`)) break;
+      const label = (await page.locator('.cal-head .date').textContent()) ?? '';
+      if (label.startsWith(target)) break;
       await page.getByRole('button', { name: '次の日' }).click();
+      // 描き直しが終わってから次を押す（押しすぎない）
+      await expect(page.locator('.cal-head .date')).not.toHaveText(label);
     }
+    await expect(page.locator('.cal-head .date')).toContainText(target);
     await expect(page.locator('.cal .bk', { hasText: `電話の${info.project.name}様` })).toBeVisible();
 
     // 会話：伏せ字で保存され、引き取ると返信できる
