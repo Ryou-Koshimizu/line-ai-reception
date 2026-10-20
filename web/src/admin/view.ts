@@ -58,7 +58,15 @@ const DAYS: Array<[Weekday, string]> = [
   ['sun', '日'],
 ];
 
-const SECTION: Record<string, string> = { all: 'すべて', menu: 'メニュー', hours: '営業時間', access: '場所・駐車場', policies: '決まり', faq: 'よくある質問', payment: '支払い' };
+const SECTION: Record<string, string> = {
+  all: 'すべて',
+  menu: 'メニュー',
+  hours: '営業時間',
+  access: '場所・駐車場',
+  policies: '決まり',
+  faq: 'よくある質問',
+  payment: '支払い',
+};
 const PART: Record<string, string> = { morning: '午前', afternoon: '午後', evening: '夕方以降', any: '' };
 
 /** 道具の入力を、人が読める短い説明にする（予約の ID などは出さない） */

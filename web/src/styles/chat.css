@@ -537,8 +537,8 @@
   color: var(--ink-2);
 }
 .rm-bar .lucide {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   transition: transform 0.4s var(--spring);
 }
 .rm-bar[aria-expanded='true'] .lucide {

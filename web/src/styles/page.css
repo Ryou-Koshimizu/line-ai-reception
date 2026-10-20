@@ -572,3 +572,11 @@
     padding: 0 16px;
   }
 }
+.float-card .lucide {
+  width: 20px;
+  height: 20px;
+}
+.scroll-cue .lucide {
+  width: 24px;
+  height: 24px;
+}

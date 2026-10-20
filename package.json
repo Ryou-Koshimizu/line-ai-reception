@@ -29,7 +29,7 @@
     "dev": "npm run build:web && wrangler dev --port 8787 --ip 127.0.0.1 --inspector-port 0",
     "dev:web": "vite --config web/vite.config.ts",
     "build:web": "vite build --config web/vite.config.ts",
-    "typecheck": "tsc -p . && tsc -p web",
+    "typecheck": "tsc -p . && tsc -p web && tsc -p tsconfig.scripts.json",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
@@ -38,7 +38,9 @@
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "richmenu:image": "tsx scripts/richmenu-image.ts",
     "richmenu:create": "tsx scripts/richmenu-create.ts",
-    "test:all": "npm run format:check && npm run typecheck && npm test && npm run build:web && npm run test:e2e"
+    "test:all": "npm run lint && npm run typecheck && npm test && npm run build:web && npm run test:e2e",
+    "lint": "prettier --check .",
+    "gif": "python3 scripts/record-gif.py"
   },
   "engines": {
     "node": ">=22"

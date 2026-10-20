@@ -40,8 +40,8 @@
   min-width: 0;
 }
 .replay-badge .lucide {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   color: var(--accent-ink);
 }
 .replay-badge b {
@@ -83,8 +83,8 @@
   color: var(--accent-ink);
 }
 .scenarios button .lucide {
-  width: 15px;
-  height: 15px;
+  width: 18px;
+  height: 18px;
 }
 .stage-body {
   min-height: 0;
@@ -247,6 +247,10 @@
   align-items: center;
   gap: 8px 14px;
 }
+.admin-top h3 .lucide {
+  width: 22px;
+  height: 22px;
+}
 .admin-top h3 {
   display: flex;
   align-items: center;
@@ -304,8 +308,8 @@
   margin-bottom: 8px;
 }
 .tile h4 .lucide {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   color: var(--accent-ink);
 }
 .stat {
@@ -926,6 +930,7 @@
 }
 .stage.app {
   grid-template-rows: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
 }
 @media (max-height: 460px) {
   .login-card .lead {
@@ -947,5 +952,33 @@
   }
   .tile-cal {
     padding: 10px 12px;
+  }
+}
+.upcoming li.empty {
+  display: block;
+  border-bottom: 0;
+}
+.admin-tabs {
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.admin .admin-tabs button {
+  flex: none;
+  white-space: nowrap;
+}
+@media (max-width: 380px) {
+  .admin .admin-tabs .lucide {
+    display: none;
+  }
+  .admin .admin-tabs button {
+    padding: 0 10px;
+  }
+  .admin .admin-top h3 {
+    display: none;
+  }
+  .admin .cal-head .date {
+    min-width: 0;
+    flex: 1;
   }
 }

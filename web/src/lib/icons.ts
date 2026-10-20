@@ -102,6 +102,7 @@ export type IconName = keyof typeof ICONS;
 
 export function icon(name: IconName): SVGElement {
   const el = createElement(ICONS[name]);
+  el.setAttribute('class', 'lucide');
   el.setAttribute('aria-hidden', 'true');
   el.setAttribute('focusable', 'false');
   return el;

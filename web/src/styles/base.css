@@ -214,8 +214,24 @@ svg {
   font-size: 0.85rem;
 }
 .btn .lucide {
-  width: 1.15em;
-  height: 1.15em;
+  width: 20px;
+  height: 20px;
+}
+.btn.small .lucide {
+  width: 17px;
+  height: 17px;
+}
+.icon-btn .lucide {
+  width: 20px;
+  height: 20px;
+}
+.seg button .lucide {
+  width: 18px;
+  height: 18px;
+}
+.eyebrow .lucide {
+  width: 18px;
+  height: 18px;
 }
 .icon-btn {
   display: inline-grid;
@@ -303,6 +319,7 @@ svg {
 }
 
 .chip {
+  white-space: nowrap;
   display: inline-flex;
   align-items: center;
   gap: 6px;

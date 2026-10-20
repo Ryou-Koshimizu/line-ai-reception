@@ -30,6 +30,8 @@ jobs:
       - run: npm test
       - run: npm run build:web
       - run: npx playwright install --with-deps chromium webkit
+      # 日本語の文字幅で画面の大きさの試験をするため
+      - run: sudo apt-get install -y --no-install-recommends fonts-noto-cjk
       # 画面の試験（Chromium・WebKit、axe、25 種の画面の大きさ）
       - run: npm run test:e2e
       - if: always()

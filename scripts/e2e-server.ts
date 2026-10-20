@@ -35,7 +35,12 @@ writeFileSync(
   ].join('\n'),
 );
 
-const bridge = await startBridge({ port: 3106, model: 'unused', effort: 'low', names: { 'U-e2e-chromium': 'テスト花子', 'U-e2e-webkit': 'テスト次郎' } });
+const bridge = await startBridge({
+  port: 3106,
+  model: 'unused',
+  effort: 'low',
+  names: { 'U-e2e-chromium': 'テスト花子', 'U-e2e-webkit': 'テスト次郎' },
+});
 // LINE への送信内容は http://127.0.0.1:3106/__log で読める（試験の確認用）
 
 const wr = spawn(
