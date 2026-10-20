@@ -54,7 +54,7 @@ export function guardReply({ text, committed, allowedLinks }: GuardInput): { tex
   if (!committed && COMMIT_CLAIM.test(out)) {
     flags.push('unverified_commit_claim');
     out =
-      'まだ手続きは終わっていません。表示されたカードのボタンから進めてください。うまくいかないときは「スタッフに相談」と送ってください。';
+      'この内容は確定前です。表示されたカードのボタンから進めてください。ほかのご用件は「スタッフに相談」と送ってください。';
   }
   if (out.length > 800) {
     flags.push('truncated');

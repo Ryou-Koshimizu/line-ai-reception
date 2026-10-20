@@ -66,7 +66,8 @@ test.describe('管理画面（実運用）', () => {
     // 会話：伏せ字で保存され、引き取ると返信できる
     await page.locator('.admin-tabs').getByRole('button', { name: /会話/ }).click();
     await expect.poll(async () => page.locator('.conv').count(), { timeout: 15_000 }).toBeGreaterThan(0);
-    await page.locator('.conv', { hasText: 'お客様' }).first().click();
+    const name = info.project.name === 'webkit' ? 'テスト次郎' : 'テスト花子';
+    await page.locator('.conv', { hasText: name }).click();
     await expect(page.locator('.thread')).toContainText('［電話番号］');
     await expect(page.locator('.thread')).not.toContainText('090-1234-5678');
     await page.getByRole('switch', { name: '人が引き取る' }).click();

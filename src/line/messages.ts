@@ -168,17 +168,17 @@ export function holdCard(b: Booking, holdMinutes: number): LineMessage {
   };
 }
 
-export function confirmedCard(b: Booking, shop: ShopInfo): LineMessage {
+export function confirmedCard(b: Booking, shop: ShopInfo, title = '予約が確定しました'): LineMessage {
   return {
     type: 'flex',
-    altText: `予約が確定しました：${formatJa(b.start_at)} ${b.menu_name}`,
+    altText: `${title}：${formatJa(b.start_at)} ${b.menu_name}`,
     contents: bubble({
       body: {
         type: 'box',
         layout: 'vertical',
         spacing: 'md',
         contents: [
-          { type: 'text', text: '予約が確定しました', weight: 'bold', size: 'md', color: ACCENT },
+          { type: 'text', text: title, weight: 'bold', size: 'md', color: ACCENT },
           { type: 'text', text: `予約番号 ${bookingCode(b)}`, size: 'xs', color: SUB },
           { type: 'separator' },
           ...bookingRows(b),

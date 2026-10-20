@@ -58,6 +58,29 @@ const DAYS: Array<[Weekday, string]> = [
   ['sun', '日'],
 ];
 
+const SECTION: Record<string, string> = { all: 'すべて', menu: 'メニュー', hours: '営業時間', access: '場所・駐車場', policies: '決まり', faq: 'よくある質問', payment: '支払い' };
+const PART: Record<string, string> = { morning: '午前', afternoon: '午後', evening: '夕方以降', any: '' };
+
+/** 道具の入力を、人が読める短い説明にする（予約の ID などは出さない） */
+function toolDetail(t: ToolUse): string {
+  const i = (t.input ?? {}) as Record<string, string>;
+  const when = (v?: string) => (v ? `${Number(v.slice(5, 7))}/${Number(v.slice(8, 10))}${v.length > 10 ? ` ${v.slice(11)}` : ''}` : '');
+  switch (t.name) {
+    case 'get_shop_info':
+      return SECTION[i.section ?? ''] ?? '';
+    case 'find_available_slots':
+      return `${when(i.date_from)}${i.date_to && i.date_to !== i.date_from ? `〜${when(i.date_to)}` : ''} ${PART[i.part_of_day ?? ''] ?? ''}`.trim();
+    case 'hold_booking':
+      return when(i.start);
+    case 'reschedule_booking':
+      return `→ ${when(i.new_start)}`;
+    case 'handoff_to_staff':
+      return (i.reason ?? '').slice(0, 24);
+    default:
+      return '';
+  }
+}
+
 function mondayOf(date: string): string {
   const wd = new Date(`${date}T00:00:00Z`).getUTCDay();
   return addDays(date, wd === 0 ? -6 : 1 - wd);
@@ -131,6 +154,7 @@ export class AdminView {
   /** 予約の変化を受けて描き直す。新しく現れた・時刻が変わった予約にはピンを刺す */
   async refresh(opts: { focusDate?: string; tools?: ToolUse[] | null } = {}): Promise<void> {
     if (opts.tools !== undefined) this.tools = opts.tools;
+    if (opts.focusDate) this.date = opts.focusDate;
     this.shop ??= await this.source.shop();
     const from = addDays(mondayOf(this.date), -7);
     const all = await this.source.bookings(from, addDays(from, 28));
@@ -139,12 +163,10 @@ export class AdminView {
       const key = `${b.id}@${b.start_at}@${b.status}`;
       if (this.seen.size && !this.seen.has(key) && b.status === 'confirmed') this.fresh.add(b.id);
     }
-    this.seen = new Set(all.map((b) => `${b.id}@${b.start_at}@${b.status}`));
+    // 見たことのある予約として覚える（表示の範囲が変わっても、前に見たものは残す）
+    for (const b of all) this.seen.add(`${b.id}@${b.start_at}@${b.status}`);
+    if (!this.seen.size) this.seen.add('init');
     this.bookingsCache = all;
-    if (opts.focusDate && opts.focusDate !== this.date) {
-      this.date = opts.focusDate;
-      return this.refresh({});
-    }
     await this.render();
   }
 
@@ -287,7 +309,7 @@ export class AdminView {
       const el = h(
         'div',
         {
-          class: `bk ${b.source === 'staff' || !b.line_user_id ? 'staff' : ''} ${b.status === 'held' ? 'held' : ''} ${this.fresh.has(b.id) ? 'fresh' : ''}`,
+          class: `bk ${len < 30 ? 'short' : ''} ${b.source === 'staff' || !b.line_user_id ? 'staff' : ''} ${b.status === 'held' ? 'held' : ''} ${this.fresh.has(b.id) ? 'fresh' : ''}`,
           style: `${pos}top:${top + 1}px;height:${Math.max(18, len - 3)}px`,
           title: `${b.start_at.slice(11)}〜${b.end_at.slice(11)} ${b.menu_name} ${b.customer_name}`,
         },
@@ -334,13 +356,7 @@ export class AdminView {
       const list = h('ul', { class: 'tools' });
       if (!this.tools?.length) list.append(h('li', { class: 'empty', text: 'この返事では道具を使っていません' }));
       this.tools?.forEach((t, i) => {
-        const detail =
-          t.input && typeof t.input === 'object'
-            ? Object.values(t.input as Record<string, unknown>)
-                .filter((v) => typeof v === 'string')
-                .slice(0, 2)
-                .join(' ')
-            : '';
+        const detail = toolDetail(t);
         list.append(
           h(
             'li',
@@ -405,7 +421,7 @@ export class AdminView {
       });
       list.append(b);
     }
-    if (!convs.length) list.append(h('p', { class: 'empty', text: 'まだ会話はありません' }));
+    if (!convs.length) list.append(h('p', { class: 'empty', text: '会話はありません' }));
     const grid = h(
       'div',
       { class: 'bento-admin' },

@@ -16,7 +16,7 @@ export interface AgentResult {
 
 const MAX_STEPS = 6;
 const MAX_INPUT = 1000;
-export const FALLBACK_TEXT = 'すみません、うまくお答えできませんでした。下のボタンから選ぶか、「スタッフに相談」と送ってください。';
+export const FALLBACK_TEXT = 'このご用件は、下のボタンから選ぶか「スタッフに相談」と送ってください。スタッフが確認します。';
 
 /** 保存済みの会話（伏せ字済み）を、AI に渡す形に直す。役割が続くときはまとめる */
 export function historyToMessages(history: StoredMessage[]): MessageParam[] {

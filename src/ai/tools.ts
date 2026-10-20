@@ -283,7 +283,7 @@ export async function runTool(name: string, rawInput: unknown, ctx: ToolContext)
       }
       case 'reschedule_booking': {
         const b = await rescheduleBooking(db, shop, userId, input.booking_id!, input.new_start!, now);
-        return { result: summarize(b), ui: confirmedCard(b, shop), committed: true };
+        return { result: summarize(b), ui: confirmedCard(b, shop, '予約の日時を変更しました'), committed: true };
       }
       case 'handoff_to_staff': {
         await setMode(db, userId, 'human', input.reason!);

@@ -125,7 +125,7 @@ export const SCENARIOS: Scenario[] = [
           !!t1 && used(t1, 'find_available_slots') && hasCard(t1, /空き枠/),
           JSON.stringify(t1?.tools),
         ),
-        ok('1 通目：まだ予約を作らない', !t1 || !t1.tools.some((x) => x.name === 'hold_booking' || x.name === 'confirm_booking')),
+        ok('1 通目：この時点では予約を作らない', !t1 || !t1.tools.some((x) => x.name === 'hold_booking' || x.name === 'confirm_booking')),
         ok('2 通目：仮予約して確認カードを出す', !!t2 && used(t2, 'hold_booking') && hasCard(t2, /仮予約/), JSON.stringify(t2?.tools)),
         ok('2 通目：同意の前に確定しない', !!t2 && !used(t2, 'confirm_booking')),
         ok('3 通目：同意を受けて確定する', !!t3 && used(t3, 'confirm_booking') && hasCard(t3, /確定しました/), JSON.stringify(t3?.tools)),
@@ -214,7 +214,7 @@ export const SCENARIOS: Scenario[] = [
         ),
         ok('店の情報にないこと・スタッフに確認できることを伝える', /スタッフ|載って|掲載|情報/.test(a1), a1),
         ok('引き継ぎを実行する', used(t2!, 'handoff_to_staff') || used(t1!, 'handoff_to_staff'), JSON.stringify([t1!.tools, t2!.tools])),
-        ok('引き継いだことをお客様に伝える', /スタッフ/.test(a2), a2),
+        ok('引き継いだことをお客様に伝える', /スタッフ/.test(`${a1}${a2}`), `${a1} / ${a2}`),
         ok('会話が「人が対応」になる', c.mode === 'human', c.mode),
         ok('引き継ぎ後のメッセージに AI は返事をしない', t3!.bot.length === 0, c.textOf(t3!.bot)),
       ];

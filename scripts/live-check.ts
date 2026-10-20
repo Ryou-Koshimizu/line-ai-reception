@@ -24,7 +24,7 @@ const ONLY = process.env.LIVE_ONLY?.split(',');
 const SECRET = `live-${randomBytes(16).toString('hex')}`;
 const ADMIN = randomBytes(24).toString('hex');
 const STAFF = randomBytes(24).toString('hex');
-const FALLBACK = 'すみません、うまくお答えできませんでした。';
+const FALLBACK = 'このご用件は、下のボタンから選ぶか「スタッフに相談」と送ってください。';
 
 const names: Record<string, string> = Object.fromEntries([...SCENARIOS, FAMILY_PRELUDE].map((s) => [s.user, s.name]));
 for (let i = 0; i < 30; i++) names[`U-race-${i}`] = `同時予約${i + 1}`;
@@ -250,7 +250,9 @@ async function runScenario(ctx: Ctx, s: Scenario) {
     prev = r.bot;
   }
   for (const t of s.turns) {
-    const r = await runTurn(ctx, s, t, prev);
+    // すでにスタッフが引き取っている会話には AI は返事をしない（前の通で引き継ぎ済みなら、返事を待たない）
+    const mode = records.at(-1)?.snapshot.mode;
+    const r = await runTurn(ctx, s, mode === 'human' ? { ...t, expectReply: false } : t, prev);
     records.push(r);
     prev = r.bot;
   }

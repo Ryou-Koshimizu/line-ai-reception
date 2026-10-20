@@ -89,7 +89,7 @@
 .stage-body {
   min-height: 0;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 404px) minmax(0, 1fr);
   gap: clamp(14px, 2vw, 28px);
 }
 .pane {
@@ -488,6 +488,14 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.bk.short {
+  justify-content: center;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.bk.short span {
+  display: none;
 }
 .bk.staff {
   border-left-color: var(--blue);
