@@ -5,6 +5,7 @@
 [![CI](https://github.com/Ryou-Koshimizu/line-ai-reception/actions/workflows/ci.yml/badge.svg)](https://github.com/Ryou-Koshimizu/line-ai-reception/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/Ryou-Koshimizu/line-ai-reception/actions/workflows/codeql.yml/badge.svg)](https://github.com/Ryou-Koshimizu/line-ai-reception/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![公開デモ](https://img.shields.io/badge/%E5%85%AC%E9%96%8B%E3%83%87%E3%83%A2-%E3%83%96%E3%83%A9%E3%82%A6%E3%82%B6%E3%81%A7%E9%96%8B%E3%81%8F-0369a1)](https://line-ai-reception.vercel.app)
 
 ![公開デモ：「金曜の午後にカット」から空き枠のカード、仮予約、確定まで。確定すると右の予約表にピンが刺さる](docs/assets/demo.gif)
 
@@ -84,6 +85,8 @@ flowchart LR
 ## 試す
 
 ### ブラウザだけで（鍵なし）
+
+**<https://line-ai-reception.vercel.app>** を開くだけで試せます。
 
 ```sh
 npm ci
