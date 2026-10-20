@@ -138,6 +138,10 @@ async function runCodex(
           reject(new Error(`codex exited ${code}: ${msg}`));
         }
       });
+      // 子が入力を読む前に終わると（失敗時など）書き込みが EPIPE になる。終わり方は close で判定する。
+      child.stdin.on('error', (e: NodeJS.ErrnoException) => {
+        if (e.code !== 'EPIPE') reject(e);
+      });
       child.stdin.end(input);
     });
     let text = '';
