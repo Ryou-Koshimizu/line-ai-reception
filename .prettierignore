@@ -1,0 +1,9 @@
+node_modules
+web/dist
+.wrangler
+playwright-report
+test-results
+package-lock.json
+docs/assets
+docs/evidence
+web/src/demo/recordings.json

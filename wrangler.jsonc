@@ -1,0 +1,38 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "line-ai-reception",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "observability": { "enabled": true },
+  // 画面（デモ・管理画面）は静的ファイル。/webhook と /api/* だけ Worker が受ける
+  "assets": {
+    "directory": "./web/dist",
+    "binding": "ASSETS",
+    "run_worker_first": ["/webhook", "/api/*"],
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "line-ai-reception",
+      // `npx wrangler d1 create line-ai-reception` で出た ID に置き換える
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations",
+    },
+  ],
+  // LINE の利用者ごとに 1 つ。同じ人のメッセージを届いた順に 1 件ずつ処理する
+  "durable_objects": {
+    "bindings": [{ "name": "CHAT", "class_name": "ChatSession" }],
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ChatSession"] }],
+  // 期限切れの仮予約の解放と、古い重複排除キーの掃除
+  "triggers": { "crons": ["*/10 * * * *"] },
+  "vars": {
+    "ENVIRONMENT": "production",
+    "CLAUDE_MODEL": "claude-sonnet-5-5",
+    "LINE_API_BASE": "https://api.line.me",
+    "ANTHROPIC_BASE_URL": "https://api.anthropic.com",
+  },
+  // 秘密（wrangler secret put で設定）:
+  //   LINE_CHANNEL_SECRET, LINE_CHANNEL_ACCESS_TOKEN, ANTHROPIC_API_KEY,
+  //   ADMIN_TOKEN, STAFF_TOKEN, STAFF_LINE_USER_IDS（任意）
+}

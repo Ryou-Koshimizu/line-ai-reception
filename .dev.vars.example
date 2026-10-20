@@ -1,0 +1,8 @@
+# 手元で wrangler dev するときの秘密。.dev.vars にコピーして値を入れる（.dev.vars はコミットしない）
+LINE_CHANNEL_SECRET=
+LINE_CHANNEL_ACCESS_TOKEN=
+ANTHROPIC_API_KEY=
+ADMIN_TOKEN=
+STAFF_TOKEN=
+# 引き継ぎの知らせを送るスタッフの LINE ユーザーID（カンマ区切り・任意）
+STAFF_LINE_USER_IDS=

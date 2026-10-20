@@ -1,0 +1,45 @@
+{
+  "name": "line-ai-reception",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "description": "LINE AI reception and booking bot for small shops on Cloudflare Workers + D1 with Claude tool use",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
+    "hono": "^4.13.13",
+    "lucide": "^1.60.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@cloudflare/vitest-plugin": "^1.4.5",
+    "@cloudflare/workers-types": "^5.20261019.1",
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^26.6.5",
+    "prettier": "^3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5",
+    "wrangler": "^4.151.2"
+  },
+  "scripts": {
+    "dev": "npm run build:web && wrangler dev --port 8787 --ip 127.0.0.1 --inspector-port 0",
+    "dev:web": "vite --config web/vite.config.ts",
+    "build:web": "vite build --config web/vite.config.ts",
+    "typecheck": "tsc -p . && tsc -p web",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "check:live": "tsx scripts/live-check.ts",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "richmenu:image": "tsx scripts/richmenu-image.ts",
+    "richmenu:create": "tsx scripts/richmenu-create.ts",
+    "test:all": "npm run format:check && npm run typecheck && npm test && npm run build:web && npm run test:e2e"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
