@@ -387,3 +387,9 @@ svg {
 [hidden] {
   display: none !important;
 }
+
+/* 見出しを文節の途中で折らない（収まらないときだけ、まとまりの間で折る） */
+.nw {
+  display: inline-block;
+  white-space: nowrap;
+}

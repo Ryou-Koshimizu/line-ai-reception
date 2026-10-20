@@ -34,7 +34,9 @@
       <section class="hero" aria-labelledby="hero-title">
         <div class="hero-copy">
           <p class="eyebrow" data-icon="Store">美容室・整体・教室などの LINE 公式アカウントに</p>
-          <h1 id="hero-title">LINE の問い合わせに<br /><span class="mark">AI が答え</span>、予約まで取る。</h1>
+          <h1 id="hero-title">
+            <span class="nw">LINE の問い合わせに</span><br /><span class="nw"><span class="mark">AI が答え</span>、予約まで取る。</span>
+          </h1>
           <p class="lead">
             よくある質問は店の情報だけを根拠に答え、空き枠はカードで選んで、仮予約 → 確認 → 確定。<span class="more"
               >難しい相談はスタッフに引き継ぎ、二重予約はデータベースの鍵で防ぎます。</span
@@ -75,7 +77,7 @@
       <section class="stage" id="demo" aria-labelledby="demo-title">
         <div class="stage-head">
           <div class="stage-title">
-            <h2 id="demo-title">体験：架空の美容室「ヘアサロン こもれび」</h2>
+            <h2 id="demo-title"><span class="nw">体験：架空の美容室</span><span class="nw">「ヘアサロン こもれび」</span></h2>
             <p>光っているボタンを押すか、送信を押すと、次のやりとりを再生します。</p>
           </div>
           <p class="replay-badge" id="replay-badge" data-icon="Info"></p>
@@ -101,7 +103,7 @@
       <section class="section" id="how" aria-labelledby="how-title">
         <div class="section-head reveal">
           <p class="kicker">しくみ</p>
-          <h2 id="how-title">1 通のメッセージが、予約表に入るまで</h2>
+          <h2 id="how-title"><span class="nw">メッセージを受けてから</span><span class="nw">予約表に入るまでの 5 段階</span></h2>
           <p>
             Webhook はすぐに 200 を返し、AI の処理は利用者ごとの Durable Object で順番に行います。予約の書き込みは D1 のトランザクション 1
             つで行います。
@@ -135,8 +137,8 @@
 
       <section class="section" id="safety" aria-labelledby="safety-title">
         <div class="section-head reveal">
-          <p class="kicker">安心して任せるための工夫</p>
-          <h2 id="safety-title">答えない・確定と言わない・人に渡す</h2>
+          <p class="kicker">安全の仕組み</p>
+          <h2 id="safety-title"><span class="nw">AI の誤答・誤った確定・</span><span class="nw">個人情報の残りを防ぐ仕組み</span></h2>
         </div>
         <div class="bento">
           <article class="w4 wide-sm reveal">
@@ -176,7 +178,7 @@
       <section class="section" id="numbers" aria-labelledby="numbers-title">
         <div class="section-head reveal">
           <p class="kicker">実機で確かめた数字</p>
-          <h2 id="numbers-title">本番と同じコードを、wrangler dev ＋ D1 で動かして測りました</h2>
+          <h2 id="numbers-title"><span class="nw">本番と同じ Worker を動かし、</span><span class="nw">実AIで測った結果</span></h2>
         </div>
         <ul class="numbers" id="numbers-list"></ul>
         <p class="numbers-note" id="numbers-note"></p>

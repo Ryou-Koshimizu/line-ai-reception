@@ -21,7 +21,7 @@
 }
 .stage-title h2 {
   font-family: var(--font-round);
-  font-size: clamp(1rem, min(1.8vw, 2.8svh), 1.35rem);
+  font-size: clamp(0.92rem, min(4.6vw, 1.8vw + 0.4rem, 2.8svh + 0.3rem), 1.35rem);
 }
 .stage-title p {
   font-size: 0.78rem;
