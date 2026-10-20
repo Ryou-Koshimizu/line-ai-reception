@@ -46,7 +46,7 @@ const local = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
 const bookingId = z.string().regex(/^[A-Z0-9]{6,16}$/);
 
 const schemas = {
-  get_shop_info: z.object({ section: z.enum(['all', 'menu', 'hours', 'access', 'policies', 'faq', 'payment']) }),
+  get_shop_info: z.object({}),
   find_available_slots: z.object({
     menu_id: z.string().max(32),
     date_from: ymd,
@@ -74,8 +74,8 @@ export const TOOL_DEFS: ToolDef[] = [
   {
     name: 'get_shop_info',
     description:
-      '店の情報（メニューと料金・営業時間と定休日・場所とアクセス・駐車場・支払い方法・予約の決まり・よくある質問）を取り出す。店について答えるときは必ずこれを使い、ここに無いことは答えない。',
-    input_schema: obj({ section: { type: 'string', enum: ['all', 'menu', 'hours', 'access', 'policies', 'faq', 'payment'] } }, ['section']),
+      '店の情報をすべて取り出す（メニューと料金・営業時間と定休日・場所とアクセス・駐車場・支払い方法・予約の決まり・よくある質問）。店について答えるときは必ずこれを使い、メニューだけでなく「よくある質問」まで読んでから答える。ここに無いことは答えない。',
+    input_schema: obj({}, []),
   },
   {
     name: 'find_available_slots',
@@ -167,36 +167,26 @@ function summarize(b: Booking) {
   };
 }
 
-function shopSection(shop: ShopInfo, section: z.infer<typeof schemas.get_shop_info>['section'], now: Date) {
-  const menu = {
-    menus: shop.menus.map((m) => ({ id: m.id, name: m.name, minutes: m.minutes, price_yen: m.price, description: m.description })),
-  };
+/** 店の情報。小さい店の情報は短いので、部分だけを渡して見落とさないよう、毎回すべてを渡す */
+function shopInfoForAi(shop: ShopInfo, now: Date) {
   const today = toJstLocal(now).slice(0, 10);
-  const upcomingClosed = shop.closedDates.filter((d) => d >= today && d <= addDays(today, 60));
-  const hours = {
-    weekly: describeHours(shop),
-    extra_closed_dates: upcomingClosed,
-    last_booking_note: 'メニューの終わりが閉店時刻までに収まる枠だけ予約できます。',
+  return {
+    name: shop.name,
+    tagline: shop.tagline,
+    menus: shop.menus.map((m) => ({ id: m.id, name: m.name, minutes: m.minutes, price_yen: m.price, description: m.description })),
+    hours: {
+      weekly: describeHours(shop),
+      extra_closed_dates: shop.closedDates.filter((d) => d >= today && d <= addDays(today, 60)),
+      last_booking_note: 'メニューの終わりが閉店時刻までに収まる枠だけ予約できます。',
+    },
+    address: shop.address,
+    access: shop.access,
+    parking: shop.parking,
+    phone: shop.phone,
+    payment: shop.payment,
+    policies: { ...shop.policies, change_deadline_hours: shop.changeDeadlineHours, hold_minutes: shop.holdMinutes },
+    faq: shop.faq,
   };
-  const access = { name: shop.name, address: shop.address, access: shop.access, parking: shop.parking, phone: shop.phone };
-  const policies = { ...shop.policies, change_deadline_hours: shop.changeDeadlineHours, hold_minutes: shop.holdMinutes };
-  const all = { tagline: shop.tagline, ...menu, hours, ...access, payment: shop.payment, policies, faq: shop.faq };
-  switch (section) {
-    case 'menu':
-      return menu;
-    case 'hours':
-      return hours;
-    case 'access':
-      return access;
-    case 'policies':
-      return policies;
-    case 'faq':
-      return { faq: shop.faq };
-    case 'payment':
-      return { payment: shop.payment };
-    default:
-      return all;
-  }
 }
 
 export async function runTool(name: string, rawInput: unknown, ctx: ToolContext): Promise<ToolOutcome> {
@@ -212,7 +202,7 @@ export async function runTool(name: string, rawInput: unknown, ctx: ToolContext)
   try {
     switch (name as ToolName) {
       case 'get_shop_info':
-        return { result: { source: '店の情報（管理画面で店が登録した内容）', data: shopSection(shop, input.section as 'all', now) } };
+        return { result: { source: '店の情報（管理画面で店が登録した内容）', data: shopInfoForAi(shop, now) } };
       case 'find_available_slots': {
         const menu = shop.menus.find((m) => m.id === input.menu_id);
         if (!menu) throw new BookingError('UNKNOWN_MENU');

@@ -43,15 +43,23 @@ describe('道具の定義', () => {
 describe('よくある質問は店の情報を根拠に答える', () => {
   it('get_shop_info の結果（駐車場）をもとに答える', async () => {
     await seedShop();
-    const model = scriptedModel([
-      [call('get_shop_info', { section: 'access' })],
-      [say('専用の駐車場はありませんが、向かいにコインパーキングがあります。')],
-    ]);
+    const model = scriptedModel([[call('get_shop_info', {})], [say('専用の駐車場はありませんが、向かいにコインパーキングがあります。')]]);
     const r = await runAgent({ model, ctx: ctx(), history: [], userText: '駐車場ありますか？' });
     expect(r.text).toContain('コインパーキング');
     const toolResult = JSON.stringify(model.requests[1]!.messages.at(-1));
     expect(toolResult).toContain('コインパーキング（30分200円）');
     expect(r.toolCalls).toEqual([{ name: 'get_shop_info', ok: true }]);
+  });
+});
+
+describe('店の情報は毎回すべて渡す', () => {
+  it('メニュー・営業時間・駐車場に加えて、よくある質問（扱っていない施術）まで含む', async () => {
+    const out = await runTool('get_shop_info', {}, ctx());
+    const json = JSON.stringify(out.result);
+    expect(json).toContain('縮毛矯正やパーマはできますか');
+    expect(json).toContain('現在は受け付けていません');
+    expect(json).toContain('コインパーキング');
+    expect(json).toContain('9800');
   });
 });
 
@@ -192,7 +200,7 @@ describe('プロンプトインジェクション・権限', () => {
   });
 
   it('道具を呼び続けて終わらない AI は 6 回で打ち切り、決まった文を返す', async () => {
-    const model = scriptedModel([[call('get_shop_info', { section: 'all' })]]);
+    const model = scriptedModel([[call('get_shop_info', {})]]);
     const r = await runAgent({ model, ctx: ctx(), history: [], userText: 'こんにちは' });
     expect(model.requests).toHaveLength(6);
     expect(r.text).toBe(FALLBACK_TEXT);

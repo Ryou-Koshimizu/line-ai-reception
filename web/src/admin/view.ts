@@ -58,15 +58,6 @@ const DAYS: Array<[Weekday, string]> = [
   ['sun', '日'],
 ];
 
-const SECTION: Record<string, string> = {
-  all: 'すべて',
-  menu: 'メニュー',
-  hours: '営業時間',
-  access: '場所・駐車場',
-  policies: '決まり',
-  faq: 'よくある質問',
-  payment: '支払い',
-};
 const PART: Record<string, string> = { morning: '午前', afternoon: '午後', evening: '夕方以降', any: '' };
 
 /** 道具の入力を、人が読める短い説明にする（予約の ID などは出さない） */
@@ -75,7 +66,7 @@ function toolDetail(t: ToolUse): string {
   const when = (v?: string) => (v ? `${Number(v.slice(5, 7))}/${Number(v.slice(8, 10))}${v.length > 10 ? ` ${v.slice(11)}` : ''}` : '');
   switch (t.name) {
     case 'get_shop_info':
-      return SECTION[i.section ?? ''] ?? '';
+      return '料金・営業時間・よくある質問など';
     case 'find_available_slots':
       return `${when(i.date_from)}${i.date_to && i.date_to !== i.date_from ? `〜${when(i.date_to)}` : ''} ${PART[i.part_of_day ?? ''] ?? ''}`.trim();
     case 'hold_booking':

@@ -93,6 +93,12 @@ npx vite preview --config web/vite.config.ts   # http://127.0.0.1:3106
 
 場面（会話で予約・ボタンで予約・よくある質問・情報にない質問と引き継ぎ・指示の書き換え・日時の変更・営業時間外）を選び、光っているボタンか送信を押すと、記録した次のやりとりを再生します。管理画面で「人が引き取る」に切り替えるとAIの再生が止まり、スタッフとしてトークに返信できます。
 
+### 公開デモの構成
+
+- 公開デモ（`/`）は静的ファイルだけで動きます（`npm run build:web` → `web/dist`）。API も鍵も使いません
+- 会話は [web/src/demo/recordings.json](web/src/demo/recordings.json) の再生です。中身は `npm run check:live` が wrangler dev ＋ D1 ＋ 実AIで実際に動かしたときの、お客様の操作・LINE に送ったメッセージ（Flex Message の JSON そのまま）・AI が使った道具・その時点の予約表です。画面にも「実AIの記録を再生しています」と出します
+- 出し方は 2 通り：Cloudflare Workers に出す（`npx wrangler deploy` で Webhook・管理画面と同じ所に載る）か、静的配信（`vercel.json` 同梱。Vercel 等で `web/dist` を配る）。静的配信では `/admin/` は API につながらないため、管理画面の操作はデモの中の管理画面で試せます
+
 ### 手元の Worker で（LINE・Claude の鍵を使う）
 
 ```sh
