@@ -15,7 +15,7 @@ import {
   type Booking,
 } from '../domain/booking';
 import { describeHours, formatOpening, hoursOn, isOpenAt, nextOpening, type ShopInfo } from '../domain/shop';
-import { addDays, formatJa, toJstLocal } from '../domain/time';
+import { addDays, formatJa, isLocalTime, toJstLocal } from '../domain/time';
 import { markClosedNotice, setMode } from '../domain/conversation';
 import { confirmedCard, holdCard, slotCarousel } from '../line/messages';
 
@@ -38,7 +38,10 @@ export interface ToolOutcome {
   committed?: boolean;
 }
 
-const ymd = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const ymd = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .refine((d) => isLocalTime(`${d}T00:00`), '存在しない日付です');
 const local = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
 const bookingId = z.string().regex(/^[A-Z0-9]{6,16}$/);
 
@@ -213,7 +216,11 @@ export async function runTool(name: string, rawInput: unknown, ctx: ToolContext)
       case 'find_available_slots': {
         const menu = shop.menus.find((m) => m.id === input.menu_id);
         if (!menu) throw new BookingError('UNKNOWN_MENU');
-        const dateTo = input.date_to ?? input.date_from!;
+        // 歩く日数を有限にする：最大 14 日分、かつ予約を受け付けている期間まで（findAvailableSlots と同じ丸め）
+        const lastDay = addDays(toJstLocal(now).slice(0, 10), shop.maxDaysAhead);
+        let dateTo = input.date_to && input.date_to >= input.date_from! ? input.date_to : input.date_from!;
+        if (dateTo > addDays(input.date_from!, 13)) dateTo = addDays(input.date_from!, 13);
+        if (dateTo > lastDay) dateTo = lastDay;
         const slots = await findAvailableSlots(
           db,
           shop,
@@ -221,7 +228,7 @@ export async function runTool(name: string, rawInput: unknown, ctx: ToolContext)
           now,
         );
         const closedDays: string[] = [];
-        for (let d = input.date_from!; d <= dateTo && closedDays.length < 14; d = addDays(d, 1)) if (!hoursOn(shop, d)) closedDays.push(d);
+        for (let d = input.date_from!; d <= dateTo; d = addDays(d, 1)) if (!hoursOn(shop, d)) closedDays.push(d);
         let suggestion: string[] = [];
         if (slots.length === 0) {
           // 希望の範囲に空きがなければ、その先 7 日の空きを少しだけ添える

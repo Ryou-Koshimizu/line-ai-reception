@@ -27,6 +27,13 @@ async function post(raw: string, signature?: string | null) {
   return exports.default.fetch(new Request('https://bot.test/webhook', { method: 'POST', headers, body: raw }));
 }
 const stubFor = (userId: string) => env.CHAT.get(env.CHAT.idFromName(userId));
+async function drain(stub: ReturnType<typeof stubFor>) {
+  for (let i = 0; i < 100; i++) {
+    await runDurableObjectAlarm(stub);
+    if ((await stub.pending()) === 0) return;
+    await new Promise((r) => setTimeout(r, 20));
+  }
+}
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -48,14 +55,13 @@ describe('POST /webhook', () => {
     const raw = body([textEvent('EV-DUP-1', 'U-dup', 'こんにちは')]);
     for (let i = 0; i < 3; i++) expect((await post(raw)).status).toBe(200);
     const stub = stubFor('U-dup');
-    expect(await stub.pending()).toBe(1);
-    await runDurableObjectAlarm(stub);
-    expect(await stub.pending()).toBe(0);
+    expect(await stub.pending()).toBeLessThanOrEqual(1); // 積む時点で 1 つにまとまる（自動のアラームで先に処理済みなら 0）
+    await drain(stub);
     const replies = fetchSpy.mock.calls.filter(([url]) => String(url).endsWith('/v2/bot/message/reply'));
     expect(replies).toHaveLength(1);
     // 処理済みの記録が残り、後から同じ ID が来ても処理しない
     expect((await post(raw)).status).toBe(200);
-    await runDurableObjectAlarm(stub);
+    await drain(stub);
     expect(fetchSpy.mock.calls.filter(([url]) => String(url).endsWith('/v2/bot/message/reply'))).toHaveLength(1);
   });
 
@@ -69,7 +75,9 @@ describe('POST /webhook', () => {
     });
     await post(body([textEvent('EV-A', 'U-order', '1'), textEvent('EV-B', 'U-order', '2')]));
     await post(body([textEvent('EV-C', 'U-order', '3')]));
-    await runDurableObjectAlarm(stubFor('U-order'));
+    // アラームは自動でも走る。積んだものが全部はけるまで待つ
+    const stub = stubFor('U-order');
+    for (let i = 0; i < 50 && order.length < 3; i++) await drain(stub);
     expect(order).toEqual(['rt-EV-A', 'rt-EV-B', 'rt-EV-C']);
   });
 

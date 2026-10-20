@@ -22,7 +22,7 @@ export interface ChatModel {
 }
 
 export function claudeModel(opts: { apiKey: string; model: string; baseURL?: string }): ChatModel {
-  const client = new Anthropic({ apiKey: opts.apiKey, baseURL: opts.baseURL, maxRetries: 2, timeout: 60_000 });
+  const client = new Anthropic({ apiKey: opts.apiKey, baseURL: opts.baseURL, maxRetries: 2, timeout: 90_000 });
   return {
     id: opts.model,
     async create(req) {

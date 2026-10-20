@@ -5,6 +5,33 @@
 const COMMIT_CLAIM = /(確定|変更|取り消し|キャンセル)(いた)?しました(?!ら)|予約[をが]?(承り|お受けし)ました|予約[がは]?完了(いた)?しました/;
 const URL_RE = /https?:\/\/[^\s)）」』]+/g;
 
+/**
+ * 店が登録した URL と同じ場所を指すか。文字列の前方一致ではなく、URL として解釈して
+ * origin（方式・ホスト・ポート）の完全一致と、パスの区切り（/）単位の前方一致で比べる。
+ * https://shop.example.com.evil.test/ や https://shop.example.com@evil.test/ は通さない。
+ */
+export function isAllowedLink(candidate: string, allowed: string[]): boolean {
+  let url: URL;
+  try {
+    url = new URL(candidate);
+  } catch {
+    return false;
+  }
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') return false;
+  if (url.username || url.password) return false;
+  return allowed.some((entry) => {
+    let base: URL;
+    try {
+      base = new URL(entry);
+    } catch {
+      return false;
+    }
+    if (base.origin !== url.origin) return false;
+    const basePath = base.pathname.endsWith('/') ? base.pathname : `${base.pathname}/`;
+    return url.pathname === base.pathname || url.pathname.startsWith(basePath);
+  });
+}
+
 export interface GuardInput {
   text: string;
   committed: boolean;
@@ -20,7 +47,7 @@ export function guardReply({ text, committed, allowedLinks }: GuardInput): { tex
     .replace(/`([^`]+)`/g, '$1')
     .trim();
   out = out.replace(URL_RE, (url) => {
-    if (allowedLinks.some((l) => url.startsWith(l))) return url;
+    if (isAllowedLink(url, allowedLinks)) return url;
     flags.push('url_removed');
     return '（リンクは省略しました）';
   });
