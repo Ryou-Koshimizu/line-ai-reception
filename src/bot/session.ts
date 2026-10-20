@@ -18,7 +18,7 @@ export class ChatSession extends DurableObject<Env> {
     super(ctx, env);
     ctx.blockConcurrencyWhile(async () => {
       ctx.storage.sql.exec(
-        'CREATE TABLE IF NOT EXISTS queue (seq INTEGER PRIMARY KEY AUTOINCREMENT, event_id TEXT UNIQUE, body TEXT NOT NULL)',
+        'CREATE TABLE IF NOT EXISTS queue (seq INTEGER PRIMARY KEY AUTOINCREMENT, event_id TEXT UNIQUE, body TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0)',
       );
     });
   }
@@ -35,8 +35,17 @@ export class ChatSession extends DurableObject<Env> {
 
   override async alarm(): Promise<void> {
     for (;;) {
-      const row = this.ctx.storage.sql.exec<{ seq: number; body: string }>('SELECT seq, body FROM queue ORDER BY seq LIMIT 1').toArray()[0];
+      const row = this.ctx.storage.sql
+        .exec<{ seq: number; body: string; attempts: number }>('SELECT seq, body, attempts FROM queue ORDER BY seq LIMIT 1')
+        .toArray()[0];
       if (!row) return;
+      // 処理の途中で止まった（再起動・入れ替え）イベントは、次のアラームでやり直す。3 回目で諦める
+      this.ctx.storage.sql.exec('UPDATE queue SET attempts = attempts + 1 WHERE seq = ?', row.seq);
+      if (row.attempts >= 3) {
+        log('error', 'queued event abandoned after retries', { count: row.attempts });
+        this.ctx.storage.sql.exec('DELETE FROM queue WHERE seq = ?', row.seq);
+        continue;
+      }
       try {
         const event = lineEventSchema.parse(JSON.parse(row.body));
         const env = this.env;
@@ -54,6 +63,7 @@ export class ChatSession extends DurableObject<Env> {
             now: clockFor(env, event.timestamp),
           },
           event,
+          { retry: row.attempts > 0 },
         );
       } catch (e) {
         // 1 件の失敗で後ろのイベントを止めない（同じイベントを何度も送り直して二重に返事しないよう、失敗しても消す）

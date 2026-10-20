@@ -11,7 +11,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { startBridge, type LineCall } from './live/bridge';
 import { DEMO_SHOP } from '../src/domain/shop';
-import { SCENARIOS, STAFF_BOOKINGS, OTHER_CUSTOMER_NAMES, type Scenario, type Turn, type Check } from './live/scenarios';
+import { SCENARIOS, STAFF_BOOKINGS, OTHER_CUSTOMER_NAMES, FAMILY_PRELUDE, type Scenario, type Turn, type Check } from './live/scenarios';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const STATE = join(ROOT, '.wrangler', 'live-check');
@@ -26,7 +26,7 @@ const ADMIN = randomBytes(24).toString('hex');
 const STAFF = randomBytes(24).toString('hex');
 const FALLBACK = 'すみません、うまくお答えできませんでした。';
 
-const names: Record<string, string> = Object.fromEntries(SCENARIOS.map((s) => [s.user, s.name]));
+const names: Record<string, string> = Object.fromEntries([...SCENARIOS, FAMILY_PRELUDE].map((s) => [s.user, s.name]));
 for (let i = 0; i < 30; i++) names[`U-race-${i}`] = `同時予約${i + 1}`;
 names['U-dedupe'] = '再送テスト';
 
@@ -129,13 +129,14 @@ function repliesFor(ctx: Ctx, replyToken: string, userId: string, after: number)
 }
 
 /** 直前の返事の中から、ラベル（または正規表現）に合うボタンの postback data を探す */
-function findButton(messages: unknown[], label: string | RegExp): string | undefined {
+function findButton(messages: unknown[], label: string | RegExp, byData = false): string | undefined {
   let found: string | undefined;
   const walk = (node: unknown) => {
     if (found || !node || typeof node !== 'object') return;
     const n = node as Record<string, unknown>;
     if (n.type === 'postback' && typeof n.label === 'string' && typeof n.data === 'string') {
-      if (typeof label === 'string' ? n.label === label : label.test(n.label)) found = n.data;
+      const target = byData ? n.data : n.label;
+      if (typeof label === 'string' ? target === label : label.test(target)) found = n.data;
     }
     for (const v of Object.values(n)) {
       if (Array.isArray(v)) v.forEach(walk);
@@ -178,7 +179,7 @@ function toolsBetween(ctx: Ctx, name: string, from: number, to: number): ToolUse
 
 export interface TurnRecord {
   at: string;
-  user: { text?: string; tap?: string; follow?: boolean };
+  user: { text?: string; tap?: string; data?: string; follow?: boolean };
   bot: unknown[];
   tools: ToolUse[];
   ms: number;
@@ -195,10 +196,10 @@ async function snapshot(userId: string) {
 async function runTurn(ctx: Ctx, s: Scenario, turn: Turn, prev: unknown[], prelude = false): Promise<TurnRecord> {
   let data = turn.data;
   let tapLabel: string | undefined;
-  if (turn.tap) {
-    data = findButton(prev, turn.tap);
+  if (turn.tap || turn.tapData) {
+    data = turn.tapData ? findButton(prev, turn.tapData, true) : findButton(prev, turn.tap!);
     tapLabel = typeof turn.tap === 'string' ? turn.tap : undefined;
-    if (!data) throw new Error(`${s.id}: ボタン「${String(turn.tap)}」が見つかりません`);
+    if (!data) throw new Error(`${s.id}: ボタン「${String(turn.tap ?? turn.tapData)}」が見つかりません`);
     const m = /[?&]?s=([^&]+)/.exec(data);
     if (!tapLabel && m) tapLabel = decodeURIComponent(m[1]!).slice(11);
   }
@@ -227,7 +228,7 @@ async function runTurn(ctx: Ctx, s: Scenario, turn: Turn, prev: unknown[], prelu
   const ms = Date.now() - sentAt;
   return {
     at: turn.at,
-    user: turn.follow ? { follow: true } : turn.say ? { text: turn.say } : { tap: tapLabel ?? turn.label ?? String(turn.tap ?? data) },
+    user: turn.follow ? { follow: true } : turn.say ? { text: turn.say } : { tap: tapLabel ?? turn.label ?? String(turn.tap ?? data), data },
     bot,
     tools: toolsBetween(ctx, s.name, sentAt, Date.now()),
     ms,
@@ -365,9 +366,7 @@ async function main() {
       (b) => ({ body: `${b} `, signature: sign(b) }),
       (b) => ({
         body: b,
-        signature: Buffer.from(sign(b), 'base64')
-          .map((x, i) => (i === 7 ? x ^ 1 : x))
-          .toString('base64'),
+        signature: Buffer.from(Buffer.from(sign(b), 'base64').map((x: number, i: number) => (i === 7 ? x ^ 1 : x))).toString('base64'),
       }),
       (b) => ({ body: b, signature: 'invalid signature value' }),
       (b) => ({ body: b, signature: sign(b).toLowerCase() }),
@@ -448,6 +447,11 @@ async function main() {
     console.log('concurrency', report.concurrency);
 
     // ── 4. 実 AI の会話（筋書き）
+    // 「ほかの人の予約番号」の筋書きのために、先に家族の予約を作り、その予約番号（先頭 6 文字）を文に入れる
+    await runScenario(ctx, FAMILY_PRELUDE);
+    const family = d1("SELECT id FROM bookings WHERE line_user_id = 'U-live-family' AND status = 'confirmed'")[0];
+    if (!family) throw new Error('家族の予約を作れませんでした');
+    for (const s of SCENARIOS) for (const t of s.turns) if (t.say) t.say = t.say.replace('FAMILY', String(family.id).slice(0, 6));
     const scenarios = SCENARIOS.filter((s) => !ONLY || ONLY.includes(s.id));
     const results: Array<{ id: string; title: string; ai: boolean; checks: Check[]; records: TurnRecord[] }> = [];
     const queue = [...scenarios];
@@ -515,6 +519,7 @@ async function main() {
       duplicate_replies: (report.dedupe as { duplicate_replies: number }).duplicate_replies,
       worker_errors: errorLines.length,
       model_errors: modelErrors.length,
+      model_error_samples: modelErrors.slice(0, 5).map((e) => e.error?.slice(0, 200)),
       pii_in_stored_messages: piiLeaks,
       model_calls: bridge.modelCalls.length,
       ai_turns: aiTurns.length,

@@ -1,0 +1,351 @@
+/* ソフトUI（ニューモーフィズム）＋ベント。淡い灰青の地から、面が盛り上がる・へこむ。
+   文字は地との対比 4.5:1 以上を守る（--ink-3 が最も薄い文字色）。 */
+@import '@fontsource/zen-maru-gothic/500.css';
+@import '@fontsource/zen-maru-gothic/700.css';
+
+:root {
+  color-scheme: light;
+  --bg: #e3e9f1;
+  --bg-deep: #d8e0eb;
+  --hi: rgba(255, 255, 255, 0.92);
+  --lo: rgba(141, 158, 186, 0.52);
+  --lo-strong: rgba(122, 140, 170, 0.62);
+  --ink: #18212f;
+  --ink-2: #364357;
+  --ink-3: #4f5d74;
+  --line: rgba(110, 128, 158, 0.22);
+  --accent: #0b7a52;
+  --accent-ink: #08643f;
+  --accent-soft: #cfeedd;
+  --blue: #2a56c6;
+  --blue-soft: #d6e1fb;
+  --amber: #8a4a00;
+  --amber-soft: #fbe6c8;
+  --rose: #a3243b;
+  --rose-soft: #f8d9df;
+  --chat-bg: #c3d2e7;
+  --bubble-me: #a3e58c;
+  --bubble-me-ink: #0f2410;
+  --radius-xl: 30px;
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --radius-sm: 11px;
+  --gutter: clamp(16px, 3.4vw, 40px);
+  --header-h: 80px;
+  --font: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Yu Gothic UI', Meiryo, sans-serif;
+  --font-round: 'Zen Maru Gothic', var(--font);
+  /* 盛り上がり・へこみ */
+  --raise: 9px 9px 20px var(--lo), -9px -9px 20px var(--hi);
+  --raise-sm: 5px 5px 12px var(--lo), -5px -5px 12px var(--hi);
+  --raise-xs: 3px 3px 7px var(--lo), -3px -3px 7px var(--hi);
+  --press: inset 4px 4px 9px var(--lo), inset -4px -4px 9px var(--hi);
+  --press-sm: inset 2px 2px 5px var(--lo), inset -2px -2px 5px var(--hi);
+  /* バネ（少し行き過ぎて戻る） */
+  --spring: linear(0, 0.012 0.7%, 0.05 1.5%, 0.2 3.2%, 0.44 5.2%, 0.77 8%, 0.97 10.6%, 1.08 13.2%, 1.12 15.6%, 1.11 18%, 1.065 21.5%, 1.02 25.5%, 0.993 30%, 0.987 35%, 0.996 46%, 1.001 60%, 1);
+  --spring-soft: linear(0, 0.03 2%, 0.13 5%, 0.4 11%, 0.7 18%, 0.9 25%, 1.01 32%, 1.035 38%, 1.03 46%, 1.005 62%, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html {
+  background: var(--bg);
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--header-h);
+}
+body {
+  margin: 0;
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol,
+figure {
+  margin: 0;
+}
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+a {
+  color: inherit;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+button {
+  cursor: pointer;
+}
+img,
+svg {
+  display: block;
+}
+.lucide {
+  width: 1em;
+  height: 1em;
+  stroke-width: 2;
+  flex: none;
+}
+:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.skip {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--ink);
+  color: #fff;
+  text-decoration: none;
+}
+.skip:focus {
+  top: 12px;
+}
+
+/* ── 面 ── */
+.raised {
+  background: var(--bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--raise);
+}
+.pressed {
+  background: var(--bg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--press);
+}
+
+/* ── ボタン（押すとへこむ） ── */
+.btn {
+  --b-shadow: var(--raise-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  min-height: 46px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--bg);
+  box-shadow: var(--b-shadow);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    box-shadow 0.35s var(--ease-out),
+    transform 0.5s var(--spring),
+    background-color 0.3s;
+}
+.btn:hover {
+  transform: translateY(-1px);
+}
+.btn:active,
+.btn[aria-pressed='true'] {
+  --b-shadow: var(--press-sm);
+  transform: translateY(0) scale(0.98);
+}
+.btn.primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow:
+    6px 6px 14px rgba(11, 122, 82, 0.32),
+    -5px -5px 12px var(--hi),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.btn.primary:active {
+  box-shadow:
+    inset 3px 3px 8px rgba(0, 50, 30, 0.45),
+    inset -2px -2px 6px rgba(255, 255, 255, 0.15);
+}
+.btn.small {
+  min-height: 36px;
+  padding: 0 14px;
+  font-size: 0.85rem;
+}
+.btn .lucide {
+  width: 1.15em;
+  height: 1.15em;
+}
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--bg);
+  box-shadow: var(--raise-xs);
+  transition:
+    box-shadow 0.3s var(--ease-out),
+    transform 0.45s var(--spring);
+}
+.icon-btn:active {
+  box-shadow: var(--press-sm);
+  transform: scale(0.94);
+}
+
+/* 切り替え（ON で溝の中の玉が動く） */
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  border: 0;
+  background: none;
+  padding: 0;
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+.switch .track {
+  position: relative;
+  width: 54px;
+  height: 30px;
+  border-radius: 999px;
+  box-shadow: var(--press);
+  transition: background-color 0.3s;
+}
+.switch .knob {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--bg);
+  box-shadow: var(--raise-xs);
+  transition: transform 0.55s var(--spring);
+}
+.switch[aria-checked='true'] .track {
+  background: var(--amber-soft);
+}
+.switch[aria-checked='true'] .knob {
+  transform: translateX(24px);
+  background: #fff;
+}
+
+/* 分割の切り替え（日／週 など） */
+.seg {
+  display: inline-flex;
+  padding: 4px;
+  gap: 4px;
+  border-radius: 999px;
+  box-shadow: var(--press-sm);
+}
+.seg button {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--ink-2);
+  transition:
+    box-shadow 0.3s var(--ease-out),
+    color 0.3s,
+    background-color 0.3s;
+}
+.seg button[aria-pressed='true'] {
+  background: var(--bg);
+  color: var(--ink);
+  box-shadow: var(--raise-xs);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.5;
+  background: var(--bg);
+  box-shadow: var(--raise-xs);
+  color: var(--ink-2);
+}
+.chip.green {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  box-shadow: none;
+}
+.chip.amber {
+  background: var(--amber-soft);
+  color: var(--amber);
+  box-shadow: none;
+}
+.chip.blue {
+  background: var(--blue-soft);
+  color: #1d3f96;
+  box-shadow: none;
+}
+.chip.rose {
+  background: var(--rose-soft);
+  color: var(--rose);
+  box-shadow: none;
+}
+
+/* ── 出てくる動き ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(26px) scale(0.985);
+  transition:
+    opacity 0.7s var(--ease-out),
+    transform 0.9s var(--spring-soft);
+  transition-delay: var(--d, 0s);
+}
+.reveal.in {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    transition-delay: 0s !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}

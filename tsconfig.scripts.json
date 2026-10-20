@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "types": ["node", "@cloudflare/workers-types"], "lib": ["es2024", "dom"] },
+  "include": ["scripts", "e2e", "playwright.config.ts"]
+}

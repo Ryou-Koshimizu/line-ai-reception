@@ -1,5 +1,5 @@
 // LINE に送るメッセージ（テキスト・クイックリプライ・Flex Message）を組み立てる。
-// 上限（クイックリプライ 13 個・カルーセル 12 枚・postback の data 300 文字・テキスト 5000 文字）を守る。
+// 上限（クイックリプライ 13 個・カルーセル 12 枚・postback の data 300 文字・テキスト 5000 文字・カルーセル 50KB）を守る。
 import type { FlexContainer, LineMessage, QuickReplyItem } from './types';
 import { formatJa } from '../domain/time';
 import { bookingCode, type Booking } from '../domain/booking';
@@ -62,7 +62,7 @@ export function slotCarousel(shop: ShopInfo, menuId: string, slots: string[]): L
   }
   const bubbles = [...byDay.entries()].slice(0, 10).map(([day, times]) => {
     const rows: unknown[] = [];
-    const shown = times.slice(0, 12);
+    const shown = times.slice(0, 18);
     for (let i = 0; i < shown.length; i += 3) {
       rows.push({
         type: 'box',

@@ -106,7 +106,7 @@ export async function findAvailableSlots(db: D1Database, shop: ShopInfo, q: Slot
   let to = q.dateTo && q.dateTo >= from ? q.dateTo : from;
   if (to > lastDay) to = lastDay;
   if (to > addDays(from, 13)) to = addDays(from, 13);
-  const limit = Math.min(q.limit ?? 24, 60);
+  const limit = Math.min(q.limit ?? 24, 200);
   const busy = await busyUnits(db, `${from}T00:00`, `${addDays(to, 1)}T00:00`, now);
   const slots: string[] = [];
   for (let date = from; date <= to; date = addDays(date, 1)) {

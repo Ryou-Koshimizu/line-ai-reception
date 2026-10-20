@@ -81,11 +81,13 @@ async function notifyStaff(deps: HandlerDeps, displayName: string, reason: strin
   }
 }
 
-export async function handleEvent(deps: HandlerDeps, event: LineEvent): Promise<void> {
+export async function handleEvent(deps: HandlerDeps, event: LineEvent, opts: { retry?: boolean } = {}): Promise<void> {
   const { db, now } = deps;
   const userId = event.source.type === 'user' ? event.source.userId : undefined;
   if (!userId) return; // 1 対 1 のトーク以外（グループ等）は扱わない
-  if (!(await markProcessed(db, event.webhookEventId, now))) {
+  // 処理済みなら LINE の再送なので読み飛ばす。ただし自分の待ち行列のやり直し（途中で止まった処理）は続ける。
+  // その場合も返信は「返信トークン → だめなら同じ再送キーのプッシュ」なので、LINE 側で 1 通にまとまる
+  if (!(await markProcessed(db, event.webhookEventId, now)) && !opts.retry) {
     log('info', 'duplicate event skipped', { event: event.webhookEventId, type: event.type });
     return;
   }
@@ -232,7 +234,7 @@ async function handlePostback(deps: HandlerDeps, shop: ShopInfo, p: PostbackCtx)
       case 'slots': {
         const menuId = params.get('m') ?? '';
         const today = toJstLocal(now).slice(0, 10);
-        const slots = await findAvailableSlots(db, shop, { menuId, dateFrom: today, dateTo: addDays(today, 6), limit: 60 }, now);
+        const slots = await findAvailableSlots(db, shop, { menuId, dateFrom: today, dateTo: addDays(today, 6), limit: 200 }, now);
         const card = slotCarousel(shop, menuId, slots);
         if (!card)
           return void (await say([

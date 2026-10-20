@@ -163,3 +163,19 @@ describe('個人情報', () => {
     expect(all).not.toContain('U1');
   });
 });
+
+describe('途中で止まった処理のやり直し', () => {
+  it('処理済みの記録だけ残って返事が出ていないイベントは、待ち行列のやり直しなら処理する（再送キーは同じ）', async () => {
+    await seedShop();
+    const line = fakeLine({ replyFails: true });
+    const ev = postbackEvent('U1', 'a=menu');
+    await env.DB.prepare('INSERT INTO processed_events (event_id, received_at) VALUES (?1, ?2)').bind(ev.webhookEventId, NOW.toISOString()).run();
+    await handleEvent(deps(line), ev); // LINE の再送としては読み飛ばす
+    expect(line.sent).toHaveLength(0);
+    await handleEvent(deps(line), ev, { retry: true });
+    await handleEvent(deps(line), ev, { retry: true });
+    expect(line.sent).toHaveLength(2);
+    // 2 回送っても再送キーが同じなので、LINE 側で 1 通にまとまる
+    expect(new Set(line.sent.map((s) => s.retryKey)).size).toBe(1);
+  });
+});

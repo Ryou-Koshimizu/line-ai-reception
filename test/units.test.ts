@@ -61,7 +61,7 @@ describe('LINE のメッセージの上限', () => {
     expect(menuPicker(DEMO_SHOP).quickReply!.items).toHaveLength(4);
   });
 
-  it('空き枠のカルーセルは 10 日・1 日 12 枠まで、postback は 300 文字まで', () => {
+  it('空き枠のカルーセルは 10 日・1 日 18 枠まで・50KB 未満、postback は 300 文字まで', () => {
     const slots: string[] = [];
     for (let d = 1; d <= 20; d++)
       for (let h = 9; h < 19; h++) slots.push(`2026-12-${String(d).padStart(2, '0')}T${String(h).padStart(2, '0')}:00`);
@@ -70,6 +70,9 @@ describe('LINE のメッセージの上限', () => {
     const contents = (m as { contents: { contents: unknown[] } }).contents.contents;
     expect(contents).toHaveLength(10);
     const json = JSON.stringify(m);
+    expect(new TextEncoder().encode(JSON.stringify(m.type === 'flex' && m.contents)).length).toBeLessThan(50_000);
+    const perDay = (contents[0] as { body: { contents: Array<{ contents: unknown[] }> } }).body.contents.flatMap((r) => r.contents);
+    expect(perDay).toHaveLength(10); // 9:00〜18:00 の 10 枠（18 枠の上限内）
     for (const [, data] of json.matchAll(/"data":"([^"]+)"/g)) expect(data!.length).toBeLessThanOrEqual(300);
     expect(() => postbackData({ a: 'x'.repeat(400) })).toThrow();
     expect(slotCarousel(DEMO_SHOP, 'cut', [])).toBeNull();
