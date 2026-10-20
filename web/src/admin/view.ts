@@ -109,6 +109,8 @@ export class AdminView {
   private selectedUser: string | null = null;
   private tools: ToolUse[] | null = null;
   private statEls: Record<keyof Stats, HTMLElement> | null = null;
+  /** ピンを刺す対象を、この利用者の予約に絞る（デモで再生中のお客様） */
+  focusUser: string | null = null;
   onModeChange?: (userId: string, mode: 'ai' | 'human') => void;
   onReply?: (userId: string, text: string) => void;
 
@@ -169,7 +171,8 @@ export class AdminView {
     this.fresh.clear();
     for (const b of all) {
       const key = `${b.id}@${b.start_at}@${b.status}`;
-      if (this.seen.size && !this.seen.has(key) && b.status === 'confirmed') this.fresh.add(b.id);
+      if (this.seen.size && !this.seen.has(key) && b.status === 'confirmed' && (!this.focusUser || b.line_user_id === this.focusUser))
+        this.fresh.add(b.id);
     }
     // 見たことのある予約として覚える（表示の範囲が変わっても、前に見たものは残す）
     for (const b of all) this.seen.add(`${b.id}@${b.start_at}@${b.status}`);

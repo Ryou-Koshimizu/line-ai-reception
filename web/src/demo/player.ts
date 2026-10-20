@@ -77,6 +77,7 @@ export class Player {
     this.source.setClock(first.at);
     this.phone.day(dateLabel(first.at.slice(0, 10)));
     this.source.upsertConversation(this.userId, rec.user.name, { mode: 'ai' });
+    this.admin.focusUser = rec.user.id;
     for (const t of prelude) {
       this.phone.user(t.user, t.at.slice(11), false);
       this.phone.bot(t.bot, t.at.slice(11), { animate: false });
