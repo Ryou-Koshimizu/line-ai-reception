@@ -119,8 +119,10 @@ const phone = new Phone(document.getElementById('phone-host')!, { title: recordi
 const admin = new AdminView(document.getElementById('admin-host')!, source, { today: '2026-11-04', showTools: true });
 const progress = document.getElementById('progress')!;
 const autoBtn = document.getElementById('auto') as HTMLButtonElement;
+const stage = document.getElementById('demo')!;
 player = new Player(phone, admin, source, (s) => {
-  progress.textContent = s.finished ? `${s.total} / ${s.total} 完了` : `${s.step} / ${s.total}`;
+  stage.toggleAttribute('data-loading', s.loading);
+  progress.textContent = s.loading ? '切り替え中' : s.finished ? `${s.total} / ${s.total} 完了` : `${s.step} / ${s.total}`;
   if (s.finished && autoBtn.getAttribute('aria-pressed') === 'true') setAuto(false);
 });
 
@@ -139,7 +141,7 @@ const buttons = recordings.scenarios
     b.addEventListener('click', () => {
       buttons.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
       setAuto(false);
-      transition(() => void player.load(r));
+      player.select(r, transition);
     });
     scenarioHost.append(b);
     return b;
@@ -147,7 +149,7 @@ const buttons = recordings.scenarios
 document.getElementById('restart')!.addEventListener('click', () => {
   const i = buttons.findIndex((b) => b.getAttribute('aria-pressed') === 'true');
   setAuto(false);
-  void player.load(recordings.scenarios.filter((r) => r.turns.length)[Math.max(0, i)]!);
+  player.select(recordings.scenarios.filter((r) => r.turns.length)[Math.max(0, i)]!);
 });
 
 // スマホ幅：トークと管理画面を切り替える
@@ -160,5 +162,5 @@ document.querySelectorAll<HTMLButtonElement>('.stage-tabs button').forEach((b, _
 );
 
 const first = recordings.scenarios.find((r) => r.turns.length);
-if (first) void player.load(first);
+if (first) player.select(first);
 revealOnScroll();

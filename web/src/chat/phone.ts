@@ -127,15 +127,26 @@ export class Phone {
     this.scroll();
   }
 
-  /** 友だち追加の場面：トークの真ん中に「友だち追加」を出す */
+  private followEl: HTMLElement | null = null;
+
+  /** 友だち追加の場面：トークの真ん中に「友だち追加」を出す（何度呼ばれても 1 つだけ。同じ要素を使い続ける） */
   followButton(onClick: () => void): void {
-    const b = h('button', { type: 'button', class: 'btn primary small follow-btn next pop' }, icon('UserRound'), '友だち追加する');
-    b.addEventListener('click', () => {
-      b.remove();
+    if (!this.followEl?.isConnected) {
+      const b = h('button', { type: 'button', class: 'btn primary small follow-btn next pop' }, icon('UserRound'), '友だち追加する');
+      this.followEl = h('div', { class: 'sys-note follow-wrap' }, b);
+      this.log.append(this.followEl);
+      this.scroll();
+    }
+    const btn = this.followEl.querySelector('button')!;
+    btn.onclick = () => {
+      this.clearFollow();
       onClick();
-    });
-    this.log.append(h('div', { class: 'sys-note follow-wrap' }, b));
-    this.scroll();
+    };
+  }
+
+  clearFollow(): void {
+    this.followEl?.remove();
+    this.followEl = null;
   }
 
   typing(): () => void {

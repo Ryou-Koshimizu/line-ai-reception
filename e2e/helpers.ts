@@ -42,17 +42,18 @@ export async function axe(page: Page, label: string) {
 /** 体験の筋書きを最後まで進める（光っているボタン・送信を順に押す） */
 export async function playToEnd(page: Page) {
   const progress = page.locator('#progress');
+  const stage = page.locator('#demo');
   for (let i = 0; i < 20; i++) {
+    // 場面の切り替え（描き直し）が終わるまで待ってから、押せるものを毎回取り直す
+    await expect(stage).not.toHaveAttribute('data-loading', /.*/);
     if ((await progress.textContent())?.includes('完了')) return;
     const before = await progress.textContent();
     const send = page.locator('.send:not([disabled])');
     const next = page.locator('.next:not([disabled])').last();
     await expect(send.or(next).first()).toBeVisible();
+    // click は押す直前に要素を取り直し、見える位置まで送ってから押す
     if (await send.isVisible()) await send.click();
-    else {
-      await next.scrollIntoViewIfNeeded();
-      await next.click();
-    }
+    else await next.click();
     await expect(progress).not.toHaveText(before ?? '', { timeout: 15_000 });
   }
   throw new Error('筋書きが終わりませんでした');

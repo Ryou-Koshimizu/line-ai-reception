@@ -21,6 +21,8 @@ export interface PlayerState {
   finished: boolean;
   busy: boolean;
   paused: boolean;
+  /** 場面の切り替え中（このあいだは何も押せない） */
+  loading: boolean;
 }
 
 export class Player {
@@ -29,6 +31,7 @@ export class Player {
   private idx = 0;
   private busy = false;
   private paused = false;
+  private loading = false;
   private auto = false;
   private token = 0;
 
@@ -60,11 +63,32 @@ export class Player {
   }
 
   private emit(): void {
-    this.onState({ step: this.idx, total: this.main.length, finished: this.idx >= this.main.length, busy: this.busy, paused: this.paused });
+    this.onState({
+      step: this.idx,
+      total: this.main.length,
+      finished: !this.loading && this.idx >= this.main.length,
+      busy: this.busy,
+      paused: this.paused,
+      loading: this.loading,
+    });
   }
 
-  async load(rec: Recording): Promise<void> {
+  /**
+   * 場面を切り替える。押せる状態のボタンはその場で止めてから、描き直しを（画面の切り替えの動きの中で）始める。
+   * 遅い端末で、切り替えの途中に古い場面のボタンを押してしまうことがないように。
+   */
+  select(rec: Recording, wrap: (update: () => void) => void = (u) => u()): void {
     const my = ++this.token;
+    this.loading = true;
+    this.phone.setExpect(null);
+    this.phone.clearFollow();
+    this.emit();
+    wrap(() => void this.load(rec, my));
+  }
+
+  async load(rec: Recording, my = ++this.token): Promise<void> {
+    if (my !== this.token) return;
+    this.loading = true;
     this.rec = rec;
     this.main = rec.turns.filter((t) => !t.prelude);
     const prelude = rec.turns.filter((t) => t.prelude);
@@ -88,9 +112,10 @@ export class Player {
     const base = prelude.at(-1)?.snapshot ?? this.main[0]!.snapshot;
     this.source.setBookings(base.bookings);
     const mine = base.bookings.find((b) => b.line_user_id === rec.user.id);
-    if (my !== this.token) return;
     await this.admin.refresh({ focusDate: mine?.start_at.slice(0, 10) ?? '2026-11-04', tools: null });
+    if (my !== this.token) return; // 待っているあいだに別の場面が選ばれた
     this.admin.selectConversation(this.userId);
+    this.loading = false;
     this.prompt();
   }
 
@@ -103,7 +128,7 @@ export class Player {
   private prompt(): void {
     this.emit();
     const t = this.main[this.idx];
-    if (!t || this.paused || this.busy) {
+    if (!t || this.paused || this.busy || this.loading) {
       this.phone.setExpect(null);
       return;
     }
@@ -123,7 +148,7 @@ export class Player {
 
   async act(): Promise<void> {
     const t = this.main[this.idx];
-    if (!t || this.busy || this.paused) return;
+    if (!t || this.busy || this.paused || this.loading) return;
     const my = this.token;
     this.busy = true;
     this.phone.setExpect(null);
