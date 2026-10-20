@@ -28,6 +28,8 @@ jobs:
       - run: npm run typecheck
       # 単体・結合の試験（Workers の実行環境 workerd ＋ D1 ＋ Durable Objects）
       - run: npm test
+      # 実機の確かめ用の道具（受け口）の試験
+      - run: npm run test:scripts
       - run: npm run build:web
       - run: npx playwright install --with-deps chromium webkit
       # 日本語の文字幅で画面の大きさの試験をするため

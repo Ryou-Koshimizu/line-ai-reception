@@ -7,7 +7,7 @@ export interface Turn {
   say?: string;
   data?: string; // postback をそのまま送る（リッチメニューのボタン）
   tap?: string | RegExp; // 直前の返事のボタンを押す（ラベルで探す）
-  tapData?: RegExp; // 直前の返事のボタンを押す（postback の data で探す。日付つきの時刻ボタンなど）
+  tapData?: string; // 直前の返事のボタンを押す（postback の data に、この文字列をそのまま含むもの。日付つきの時刻ボタンなど）
   label?: string; // 画面に出す「押したボタン」の名前
   follow?: boolean;
   expectReply?: boolean;
@@ -92,12 +92,17 @@ const hasCard = (t: TurnView, re: RegExp) =>
 const firstText = (t: TurnView) => (t.bot as Array<{ type: string; text?: string }>).find((m) => m.type === 'text')?.text ?? '';
 const active = (c: CheckInput) => c.userBookings.filter((b) => b.status === 'confirmed' || b.status === 'held');
 
+/** 時刻ボタンの postback に入る「s=…」。ボット側と同じ URLSearchParams で作る（: などをすべて同じ規則で符号化） */
+export function slotParam(start: string): string {
+  return new URLSearchParams({ s: start }).toString();
+}
+
 /** 予約を 1 件持たせるための、ボタンだけの前置き（AI を使わない） */
-function bookByButtons(menuLabel: string, start: string, at: string): Turn[] {
+export function bookByButtons(menuLabel: string, start: string, at: string): Turn[] {
   return [
     { at, data: 'a=book', label: '予約する' },
     { at, tap: menuLabel },
-    { at, tapData: new RegExp(`s=${start.replace(':', '%3A')}`) },
+    { at, tapData: slotParam(start) },
     { at, tap: '予約を確定する' },
   ];
 }

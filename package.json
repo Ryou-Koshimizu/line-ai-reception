@@ -38,9 +38,10 @@
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "richmenu:image": "tsx scripts/richmenu-image.ts",
     "richmenu:create": "tsx scripts/richmenu-create.ts",
-    "test:all": "npm run lint && npm run typecheck && npm test && npm run build:web && npm run test:e2e",
+    "test:all": "npm run lint && npm run typecheck && npm test && npm run test:scripts && npm run build:web && npm run test:e2e",
     "lint": "prettier --check .",
-    "gif": "python3 scripts/record-gif.py"
+    "gif": "python3 scripts/record-gif.py",
+    "test:scripts": "tsx --test scripts/live/bridge.test.ts"
   },
   "engines": {
     "node": ">=22"

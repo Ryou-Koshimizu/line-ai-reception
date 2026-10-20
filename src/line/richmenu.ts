@@ -25,3 +25,18 @@ export function richMenuDefinition(name = 'AI受付メニュー') {
     })),
   };
 }
+
+/** LINE に送ってよいリッチメニュー画像か（PNG・1MB 以下・2500×1686）。だめなら理由を返す */
+export function checkRichMenuImage(bytes: Uint8Array): { ok: true } | { ok: false; reason: string } {
+  const PNG = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+  if (bytes.length > 1024 * 1024) return { ok: false, reason: '1MB を超えています' };
+  if (bytes.length < 24 || PNG.some((b, i) => bytes[i] !== b)) return { ok: false, reason: 'PNG ではありません' };
+  // IHDR の幅と高さ（ビッグエンディアン 4 バイトずつ）
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (String.fromCharCode(...bytes.slice(12, 16)) !== 'IHDR') return { ok: false, reason: 'PNG の形が崩れています' };
+  const width = view.getUint32(16);
+  const height = view.getUint32(20);
+  if (width !== RICH_MENU_SIZE.width || height !== RICH_MENU_SIZE.height)
+    return { ok: false, reason: `大きさが ${width}×${height} です（${RICH_MENU_SIZE.width}×${RICH_MENU_SIZE.height} が必要）` };
+  return { ok: true };
+}

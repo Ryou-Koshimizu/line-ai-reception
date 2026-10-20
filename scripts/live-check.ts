@@ -135,8 +135,13 @@ function findButton(messages: unknown[], label: string | RegExp, byData = false)
     if (found || !node || typeof node !== 'object') return;
     const n = node as Record<string, unknown>;
     if (n.type === 'postback' && typeof n.label === 'string' && typeof n.data === 'string') {
-      const target = byData ? n.data : n.label;
-      if (typeof label === 'string' ? target === label : label.test(target)) found = n.data;
+      // data で探すときは「&」で区切った項目のどれかと完全一致（部分一致で別の時刻を拾わない）
+      const hit = byData
+        ? typeof label === 'string' && n.data.split('&').includes(label)
+        : typeof label === 'string'
+          ? n.label === label
+          : label.test(n.label);
+      if (hit) found = n.data;
     }
     for (const v of Object.values(n)) {
       if (Array.isArray(v)) v.forEach(walk);

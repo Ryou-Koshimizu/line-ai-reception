@@ -134,11 +134,34 @@ export async function findAvailableSlots(db: D1Database, shop: ShopInfo, q: Slot
   return slots;
 }
 
+export const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 紛らわしい 0/O/1/I は使わない
+
+/**
+ * 偏りのない乱数の文字列。必要なビット数だけ取り出し、文字の数を超えた値は捨てて引き直す（棄却サンプリング）。
+ * 剰余（%）を使うと、文字の数が 2 のべき乗でないときに一部の文字が出やすくなるため使わない。
+ */
+export function randomCode(
+  length: number,
+  alphabet = CODE_ALPHABET,
+  random: (buf: Uint8Array) => Uint8Array = (b) => crypto.getRandomValues(b),
+): string {
+  if (alphabet.length < 2 || alphabet.length > 256) throw new Error('ALPHABET_SIZE');
+  const bits = Math.ceil(Math.log2(alphabet.length));
+  const mask = (1 << bits) - 1;
+  let out = '';
+  while (out.length < length) {
+    for (const byte of random(new Uint8Array(length * 2))) {
+      const v = byte & mask;
+      if (v < alphabet.length) out += alphabet[v];
+      if (out.length === length) break;
+    }
+  }
+  return out;
+}
+
 function newId(): string {
-  // 推測されにくい 12 文字（予約番号として客にも見せる先頭 6 文字は大文字英数字）
-  const bytes = crypto.getRandomValues(new Uint8Array(12));
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 32 文字。紛らわしい 0/O/1/I は使わない
-  return [...bytes].map((b) => alphabet[b % alphabet.length]).join('');
+  // 推測されにくい 12 文字（予約番号として客にも見せるのは先頭 6 文字）
+  return randomCode(12);
 }
 
 function isConstraintError(e: unknown): boolean {

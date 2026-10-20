@@ -16,6 +16,8 @@
 | 管理画面の不正利用         | 鍵（Bearer）を SHA-256 にしてから定数時間で比較。スタッフの鍵では店の情報を編集できない                                     | `test/admin.test.ts`・`e2e/admin-live.spec.ts`                                               |
 | 個人情報の残存             | 電話番号・メール・カード番号・郵便番号を保存前に伏せ字。記録（ログ）は決まった項目だけ                                      | `test/handler.test.ts`・`test/units.test.ts`                                                 |
 
+Code scanning の指摘と対処の記録は [docs/security.md](docs/security.md)。
+
 ## 秘密情報について
 
 チャネルシークレット・アクセストークン・Claude API の鍵・管理画面の鍵は `wrangler secret put` で設定し、リポジトリには含めません。`.dev.vars` はコミットしない設定です。
