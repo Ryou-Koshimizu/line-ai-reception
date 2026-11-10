@@ -7,13 +7,13 @@
   "description": "LINE AI reception and booking bot for small shops on Cloudflare Workers + D1 with Claude tool use",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",
-    "hono": "^4.13.13",
-    "lucide": "^1.60.0",
+    "hono": "^4.13.14",
+    "lucide": "^1.61.0",
     "zod": "^4.6.7"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
-    "@cloudflare/vitest-plugin": "^1.4.5",
+    "@cloudflare/vitest-plugin": "^1.4.8",
     "@cloudflare/workers-types": "^5.20261019.1",
     "@fontsource/zen-maru-gothic": "^5.3.1",
     "@playwright/test": "^1.64.1",
@@ -21,7 +21,7 @@
     "prettier": "^3.9.10",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
-    "vite": "^8.3.4",
+    "vite": "^8.3.5",
     "vitest": "^5.0.5",
     "wrangler": "^4.151.2"
   },
