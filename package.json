@@ -7,7 +7,7 @@
   "description": "LINE AI reception and booking bot for small shops on Cloudflare Workers + D1 with Claude tool use",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",
-    "hono": "^4.13.13",
+    "hono": "^4.13.16",
     "lucide": "^1.60.0",
     "zod": "^4.6.7"
   },
